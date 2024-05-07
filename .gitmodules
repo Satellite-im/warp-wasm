@@ -1,0 +1,3 @@
+[submodule "Warp"]
+	path = Warp
+	url = git@github.com:Satellite-im/Warp.git
