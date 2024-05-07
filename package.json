@@ -16,6 +16,9 @@
     "url": "https://github.com/Satellite-im/warp-wasm/issues"
   },
   "homepage": "https://github.com/Satellite-im/warp-wasm#readme",
+  "dependencies": {
+    "warp": "github:Satellite-im/Warp"
+  },
   "devDependencies": {
     "wasm-pack": "^0.12.1"
   }
