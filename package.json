@@ -1,0 +1,22 @@
+{
+  "name": "warp-wasm",
+  "version": "1.0.0",
+  "description": "Web Assembly TypeScript library for interfacing with Warp.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Satellite-im/warp-wasm.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Satellite-im/warp-wasm/issues"
+  },
+  "homepage": "https://github.com/Satellite-im/warp-wasm#readme",
+  "devDependencies": {
+    "wasm-pack": "^0.12.1"
+  }
+}
