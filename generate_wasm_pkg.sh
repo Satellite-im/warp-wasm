@@ -1,13 +1,13 @@
-cd Warp/warp
+git submodule update --init --recursive
+cd Warp/extensions/warp-ipfs
 wasm-pack build --target web
 
-cd ..
-cd ..
+cd ../../..
 
 # Check if the source directory exists
-if [ -d "Warp/warp/pkg" ]; then
+if [ -d "Warp/extensions/warp-ipfs/pkg" ]; then
     # Move the pkg directory to the repository's root
-    mv Warp/warp/pkg .
+    mv Warp/extensions/warp-ipfs/pkg .
     echo "Pkg folder moved successfully."
 else
     echo "The source directory does not exist."
