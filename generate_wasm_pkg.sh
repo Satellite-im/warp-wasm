@@ -2,8 +2,7 @@ git submodule update --init --recursive
 cd Warp/extensions/warp-ipfs
 wasm-pack build --target web
 
-cd ..
-cd ..
+cd ../../..
 
 # Check if the source directory exists
 if [ -d "Warp/extensions/warp-ipfs/pkg" ]; then
