@@ -1,4 +1,4 @@
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 cd Warp/extensions/warp-ipfs
 wasm-pack build --target web
 

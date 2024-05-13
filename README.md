@@ -13,6 +13,6 @@ cargo install wasm-pack
 ### Updating this library:
 
 ```
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 wasm-pack build Warp/extensions/warp-ipfs --target web --out-dir ../../../pkg
 ```
