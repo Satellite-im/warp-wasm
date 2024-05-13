@@ -1,19 +1,13 @@
 {
-  "name": "warp",
-  "description": "TBD",
+  "name": "warp-ipfs",
   "version": "0.1.0",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Satellite-im/Warp"
-  },
   "files": [
-    "warp_bg.wasm",
-    "warp.js",
-    "warp.d.ts"
+    "warp_ipfs_bg.wasm",
+    "warp_ipfs.js",
+    "warp_ipfs.d.ts"
   ],
-  "module": "warp.js",
-  "types": "warp.d.ts",
+  "module": "warp_ipfs.js",
+  "types": "warp_ipfs.d.ts",
   "sideEffects": [
     "./snippets/*"
   ]
