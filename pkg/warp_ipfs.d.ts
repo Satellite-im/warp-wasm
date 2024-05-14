@@ -16,25 +16,6 @@
 export function generate_name(): string;
 /**
 */
-export enum MultiPassEventKindEnum {
-  FriendRequestReceived = 0,
-  FriendRequestSent = 1,
-  IncomingFriendRequestRejected = 2,
-  OutgoingFriendRequestRejected = 3,
-  IncomingFriendRequestClosed = 4,
-  OutgoingFriendRequestClosed = 5,
-  FriendAdded = 6,
-  FriendRemoved = 7,
-  IdentityOnline = 8,
-  IdentityOffline = 9,
-  IdentityUpdate = 10,
-  Blocked = 11,
-  BlockedBy = 12,
-  Unblocked = 13,
-  UnblockedBy = 14,
-}
-/**
-*/
 export enum IdentityUpdate {
   Username = 0,
   Picture = 1,
@@ -50,27 +31,17 @@ export enum IdentityUpdate {
 }
 /**
 */
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
-  Own = 3,
-}
-/**
-*/
 export enum TesseractEvent {
   Unlocked = 0,
   Locked = 1,
 }
 /**
-* Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
 */
-export class AsyncIterator {
-  free(): void;
-/**
-* @returns {Promise<Promise<any>>}
-*/
-  next(): Promise<Promise<any>>;
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
+  Own = 3,
 }
 /**
 */
@@ -91,11 +62,6 @@ export class Config {
 * @returns {Config}
 */
   static minimal_testing(): Config;
-}
-/**
-*/
-export class ConstellationBox {
-  free(): void;
 }
 /**
 */
@@ -200,129 +166,16 @@ export class MultiPassBox {
 * @returns {Promise<void>}
 */
   update_identity(option: IdentityUpdate, value: any): Promise<void>;
-/**
-* @returns {Promise<AsyncIterator>}
-*/
-  multipass_subscribe(): Promise<AsyncIterator>;
-/**
-* Send friend request to corresponding public key
-* @param {string} pubkey
-* @returns {Promise<void>}
-*/
-  send_request(pubkey: string): Promise<void>;
-/**
-* Accept friend request from public key
-* @param {string} pubkey
-* @returns {Promise<void>}
-*/
-  accept_request(pubkey: string): Promise<void>;
-/**
-* Deny friend request from public key
-* @param {string} pubkey
-* @returns {Promise<void>}
-*/
-  deny_request(pubkey: string): Promise<void>;
-/**
-* Closing or retracting friend request
-* @param {string} pubkey
-* @returns {Promise<void>}
-*/
-  close_request(pubkey: string): Promise<void>;
-/**
-* Check to determine if a request been received from the DID
-* @param {string} pubkey
-* @returns {Promise<boolean>}
-*/
-  received_friend_request_from(pubkey: string): Promise<boolean>;
-/**
-* List the incoming friend request
-* @returns {Promise<any>}
-*/
-  list_incoming_request(): Promise<any>;
-/**
-* Check to determine if a request been sent to the DID
-* @param {string} pubkey
-* @returns {Promise<boolean>}
-*/
-  sent_friend_request_to(pubkey: string): Promise<boolean>;
-/**
-* List the outgoing friend request
-* @returns {Promise<any>}
-*/
-  list_outgoing_request(): Promise<any>;
-/**
-* Remove friend from contacts
-* @param {string} pubkey
-* @returns {Promise<void>}
-*/
-  remove_friend(pubkey: string): Promise<void>;
-/**
-* Block public key, rather it be a friend or not, from being able to send request to account public address
-* @param {string} pubkey
-* @returns {Promise<void>}
-*/
-  block(pubkey: string): Promise<void>;
-/**
-* Unblock public key
-* @param {string} pubkey
-* @returns {Promise<void>}
-*/
-  unblock(pubkey: string): Promise<void>;
-/**
-* List block list
-* @returns {Promise<any>}
-*/
-  block_list(): Promise<any>;
-/**
-* Check to see if public key is blocked
-* @param {string} pubkey
-* @returns {Promise<boolean>}
-*/
-  is_blocked(pubkey: string): Promise<boolean>;
-/**
-* List all friends public key
-* @returns {Promise<any>}
-*/
-  list_friends(): Promise<any>;
-/**
-* Check to see if public key is friend of the account
-* @param {string} pubkey
-* @returns {Promise<boolean>}
-*/
-  has_friend(pubkey: string): Promise<boolean>;
 }
 /**
+* Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
 */
-export class MultiPassEventKind {
+export class Subscription {
   free(): void;
 /**
+* @returns {Promise<Promise<any>>}
 */
-  readonly did: string;
-/**
-*/
-  readonly kind: MultiPassEventKindEnum;
-}
-/**
-* Wraps in the TesseractEvent promise result in the js object expected by js async iterator
-*/
-export class PromiseResult {
-  free(): void;
-/**
-* @param {any} value
-* @returns {PromiseResult}
-*/
-  static new(value: any): PromiseResult;
-/**
-*/
-  done: boolean;
-/**
-*/
-  readonly value: any;
-}
-/**
-*/
-export class RayGunBox {
-  free(): void;
+  next(): Promise<Promise<any>>;
 }
 /**
 * The key store that holds encrypted strings that can be used for later use.
@@ -497,13 +350,25 @@ export class Tesseract {
 */
   save(): void;
 /**
-* @returns {AsyncIterator}
+* @returns {AsyncIterator<any>}
 */
-  subscribe(): AsyncIterator;
+  subscribe(): AsyncIterator<any>;
 /**
 * Used to load contents from local storage
 */
   load_from_storage(): void;
+}
+/**
+* Wraps in the TesseractEvent promise result in the js object expected by js async iterator
+*/
+export class TesseractEventPromiseResult {
+  free(): void;
+/**
+*/
+  done: boolean;
+/**
+*/
+  value: TesseractEvent;
 }
 /**
 */
@@ -511,13 +376,7 @@ export class WarpInstance {
   free(): void;
 /**
 */
-  readonly constellation: ConstellationBox;
-/**
-*/
   readonly multipass: MultiPassBox;
-/**
-*/
-  readonly raygun: RayGunBox;
 }
 /**
 */
@@ -540,55 +399,7 @@ export interface InitOutput {
   readonly config_development: () => number;
   readonly config_testing: () => number;
   readonly config_minimal_testing: () => number;
-  readonly __wbg_asynciterator_free: (a: number) => void;
-  readonly asynciterator_next: (a: number) => number;
-  readonly __wbg_promiseresult_free: (a: number) => void;
-  readonly __wbg_get_promiseresult_done: (a: number) => number;
-  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
-  readonly promiseresult_new: (a: number) => number;
-  readonly promiseresult_value: (a: number) => number;
-  readonly __wbg_multipassbox_free: (a: number) => void;
-  readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly multipassbox_get_identity: (a: number, b: number, c: number) => number;
-  readonly multipassbox_get_own_identity: (a: number) => number;
-  readonly multipassbox_update_identity: (a: number, b: number, c: number) => number;
-  readonly multipassbox_multipass_subscribe: (a: number) => number;
-  readonly multipassbox_send_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_accept_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_deny_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_close_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_received_friend_request_from: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_incoming_request: (a: number) => number;
-  readonly multipassbox_sent_friend_request_to: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_outgoing_request: (a: number) => number;
-  readonly multipassbox_remove_friend: (a: number, b: number, c: number) => number;
-  readonly multipassbox_block: (a: number, b: number, c: number) => number;
-  readonly multipassbox_unblock: (a: number, b: number, c: number) => number;
-  readonly multipassbox_block_list: (a: number) => number;
-  readonly multipassbox_is_blocked: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_friends: (a: number) => number;
-  readonly multipassbox_has_friend: (a: number, b: number, c: number) => number;
-  readonly __wbg_multipasseventkind_free: (a: number) => void;
-  readonly multipasseventkind_kind: (a: number) => number;
-  readonly multipasseventkind_did: (a: number, b: number) => void;
-  readonly __wbg_identityprofile_free: (a: number) => void;
-  readonly identityprofile_new: (a: number, b: number, c: number) => number;
-  readonly identityprofile_identity: (a: number) => number;
-  readonly identityprofile_set_identity: (a: number, b: number) => void;
-  readonly identityprofile_passphrase: (a: number, b: number) => void;
-  readonly __wbg_identity_free: (a: number) => void;
-  readonly identity_set_username: (a: number, b: number, c: number) => void;
-  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
-  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
-  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
-  readonly identity_set_created: (a: number, b: number) => void;
-  readonly identity_set_modified: (a: number, b: number) => void;
-  readonly identity_username: (a: number, b: number) => void;
-  readonly identity_status_message: (a: number, b: number) => void;
-  readonly identity_short_id: (a: number, b: number) => void;
-  readonly identity_did_key: (a: number, b: number) => void;
-  readonly identity_created: (a: number) => number;
-  readonly identity_modified: (a: number) => number;
+  readonly generate_name: (a: number) => void;
   readonly __wbg_tesseract_free: (a: number) => void;
   readonly tesseract_new: () => number;
   readonly tesseract_set_autosave: (a: number) => void;
@@ -608,27 +419,52 @@ export interface InitOutput {
   readonly tesseract_save: (a: number, b: number) => void;
   readonly tesseract_subscribe: (a: number) => number;
   readonly tesseract_load_from_storage: (a: number, b: number) => void;
-  readonly __wbg_constellationbox_free: (a: number) => void;
-  readonly __wbg_warpinstance_free: (a: number) => void;
+  readonly __wbg_subscription_free: (a: number) => void;
+  readonly subscription_next: (a: number) => number;
+  readonly __wbg_tesseracteventpromiseresult_free: (a: number) => void;
+  readonly __wbg_get_tesseracteventpromiseresult_value: (a: number) => number;
+  readonly __wbg_set_tesseracteventpromiseresult_value: (a: number, b: number) => void;
+  readonly __wbg_get_tesseracteventpromiseresult_done: (a: number) => number;
+  readonly __wbg_set_tesseracteventpromiseresult_done: (a: number, b: number) => void;
+  readonly __wbg_identityprofile_free: (a: number) => void;
+  readonly identityprofile_new: (a: number, b: number, c: number) => number;
+  readonly identityprofile_identity: (a: number) => number;
+  readonly identityprofile_set_identity: (a: number, b: number) => void;
+  readonly identityprofile_passphrase: (a: number, b: number) => void;
+  readonly __wbg_identity_free: (a: number) => void;
+  readonly identity_set_username: (a: number, b: number, c: number) => void;
+  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
+  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
+  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
+  readonly identity_set_created: (a: number, b: number) => void;
+  readonly identity_set_modified: (a: number, b: number) => void;
+  readonly identity_username: (a: number, b: number) => void;
+  readonly identity_status_message: (a: number, b: number) => void;
+  readonly identity_short_id: (a: number, b: number) => void;
+  readonly identity_did_key: (a: number, b: number) => void;
+  readonly identity_created: (a: number) => number;
+  readonly identity_modified: (a: number) => number;
   readonly warpinstance_multipass: (a: number) => number;
-  readonly warpinstance_raygun: (a: number) => number;
-  readonly warpinstance_constellation: (a: number) => number;
-  readonly generate_name: (a: number) => void;
-  readonly __wbg_raygunbox_free: (a: number) => void;
+  readonly __wbg_multipassbox_free: (a: number) => void;
+  readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly multipassbox_get_identity: (a: number, b: number, c: number) => number;
+  readonly multipassbox_get_own_identity: (a: number) => number;
+  readonly multipassbox_update_identity: (a: number, b: number, c: number) => number;
+  readonly __wbg_warpinstance_free: (a: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h78f2fdaca8477660: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h675c1f5f34bba5e6: (a: number, b: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hbbc5da02b2e63199: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h50a00e247fe2e442: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h10e8b410c01b787f: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h354fac41522cfa0b: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hd6c7af03884f20fc: (a: number, b: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke1_mut__h8f19ca6c587c4210: (a: number, b: number, c: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke0_mut__he0d675b39a8399d4: (a: number, b: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h851ad40956bf89b2: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h49ca63d0fff4466a: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__ha0ad73238c4670f6: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hfad670430282ef40: (a: number, b: number, c: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke0_mut__h7898784814d5d2ca: (a: number, b: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
-  readonly wasm_bindgen__convert__closures__invoke2_mut__hc57b695ec7a8fdc9: (a: number, b: number, c: number, d: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke2_mut__h050f17ebdb2912c6: (a: number, b: number, c: number, d: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
