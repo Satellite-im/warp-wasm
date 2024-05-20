@@ -1,5 +1,4 @@
-import * as warp from './Warp/extensions/warp-ipfs/pkg/warp_ipfs.js';
-const init = warp.default
+import init, * as warp from './Warp/extensions/warp-ipfs/pkg/warp_ipfs.js';
 
 export default init
 
