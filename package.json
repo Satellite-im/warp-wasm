@@ -2,9 +2,14 @@
   "name": "warp-wasm",
   "version": "1.0.2",
   "description": "Web Assembly TypeScript library for interfacing with Warp.",
-  "main": "./index.ts",
-  "exports": "./index.js",
-  "types": "./index.d.ts",
+  "main": "Warp/extensions/warp-ipfs/pkg/warp_ipfs.js",
+  "types": "Warp/extensions/warp-ipfs/pkg/warp_ipfs.d.ts",
+  "files": [
+    "Warp/extensions/warp-ipfs/pkg/warp_ipfs.js",
+    "Warp/extensions/warp-ipfs/pkg/warp_ipfs.d.ts",
+    "Warp/extensions/warp-ipfs/pkg/warp_ipfs_bg.wasm",
+    "Warp/extensions/warp-ipfs/pkg/warp_ipfs_bg.wasm.d.ts"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
