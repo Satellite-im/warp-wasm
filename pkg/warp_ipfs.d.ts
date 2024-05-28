@@ -1,9 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
-*/
-export function initialize(): void;
-/**
 * Used to generate a random user name
 *
 * # Example
@@ -19,9 +16,71 @@ export function initialize(): void;
 export function generate_name(): string;
 /**
 */
+export function initialize(): void;
+/**
+*/
+export enum MessageStatus {
+/**
+* If a message has not been sent.
+*/
+  NotSent = 0,
+/**
+* If a message has been sent, either directly or through a third party service
+*/
+  Sent = 1,
+/**
+* Confirmation of message being delivered. May be used in the future
+*/
+  Delivered = 2,
+}
+/**
+*/
 export enum ReactionState {
   Add = 0,
   Remove = 1,
+}
+/**
+*/
+export enum EmbedState {
+  Enabled = 0,
+  Disable = 1,
+}
+/**
+*/
+export enum PinState {
+  Pin = 0,
+  Unpin = 1,
+}
+/**
+*/
+export enum IdentityUpdate {
+  Username = 0,
+  Picture = 1,
+  PicturePath = 2,
+  PictureStream = 3,
+  ClearPicture = 4,
+  Banner = 5,
+  BannerPath = 6,
+  BannerStream = 7,
+  ClearBanner = 8,
+  StatusMessage = 9,
+  ClearStatusMessage = 10,
+}
+/**
+*/
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
+  Own = 3,
+}
+/**
+*/
+export enum MessageEvent {
+/**
+* Event that represents typing
+*/
+  Typing = 0,
 }
 /**
 */
@@ -43,47 +102,10 @@ export enum MessageType {
 }
 /**
 */
-export enum MessageStatus {
-/**
-* If a message has not been sent.
-*/
-  NotSent = 0,
-/**
-* If a message has been sent, either directly or through a third party service
-*/
-  Sent = 1,
-/**
-* Confirmation of message being delivered. May be used in the future
-*/
-  Delivered = 2,
-}
-/**
-*/
-export enum MessageEvent {
-/**
-* Event that represents typing
-*/
-  Typing = 0,
-}
-/**
-*/
-export enum PinState {
-  Pin = 0,
-  Unpin = 1,
-}
-/**
-*/
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
-  Own = 3,
-}
-/**
-*/
-export enum EmbedState {
-  Enabled = 0,
-  Disable = 1,
+export enum MessagesEnum {
+  List = 0,
+  Stream = 1,
+  Page = 2,
 }
 /**
 */
@@ -109,28 +131,6 @@ export enum MultiPassEventKindEnum {
   BlockedBy = 12,
   Unblocked = 13,
   UnblockedBy = 14,
-}
-/**
-*/
-export enum IdentityUpdate {
-  Username = 0,
-  Picture = 1,
-  PicturePath = 2,
-  PictureStream = 3,
-  ClearPicture = 4,
-  Banner = 5,
-  BannerPath = 6,
-  BannerStream = 7,
-  ClearBanner = 8,
-  StatusMessage = 9,
-  ClearStatusMessage = 10,
-}
-/**
-*/
-export enum MessagesEnum {
-  List = 0,
-  Stream = 1,
-  Page = 2,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
@@ -161,6 +161,15 @@ export class Config {
 * @returns {Config}
 */
   static minimal_testing(): Config;
+/**
+* @returns {Config}
+*/
+  static minimal_basic(): Config;
+/**
+* @param {(string)[]} addresses
+* @returns {Config}
+*/
+  static minimal_with_relay(addresses: (string)[]): Config;
 }
 /**
 */
@@ -971,44 +980,8 @@ export interface InitOutput {
   readonly config_development: () => number;
   readonly config_testing: () => number;
   readonly config_minimal_testing: () => number;
-  readonly __wbg_groupsettings_free: (a: number) => void;
-  readonly groupsettings_members_can_add_participants: (a: number) => number;
-  readonly groupsettings_members_can_change_name: (a: number) => number;
-  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
-  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
-  readonly __wbg_asynciterator_free: (a: number) => void;
-  readonly asynciterator_next: (a: number) => number;
-  readonly __wbg_promiseresult_free: (a: number) => void;
-  readonly __wbg_get_promiseresult_done: (a: number) => number;
-  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
-  readonly promiseresult_new: (a: number) => number;
-  readonly promiseresult_value: (a: number) => number;
-  readonly __wbg_warpinstance_free: (a: number) => void;
-  readonly warpinstance_multipass: (a: number) => number;
-  readonly warpinstance_raygun: (a: number) => number;
-  readonly warpinstance_constellation: (a: number) => number;
-  readonly initialize: () => void;
-  readonly __wbg_constellationbox_free: (a: number) => void;
-  readonly __wbg_directconversationsettings_free: (a: number) => void;
-  readonly __wbg_tesseract_free: (a: number) => void;
-  readonly tesseract_new: () => number;
-  readonly tesseract_set_autosave: (a: number) => void;
-  readonly tesseract_autosave_enabled: (a: number) => number;
-  readonly tesseract_disable_key_check: (a: number) => void;
-  readonly tesseract_enable_key_check: (a: number) => void;
-  readonly tesseract_is_key_check_enabled: (a: number) => number;
-  readonly tesseract_exist: (a: number, b: number, c: number) => number;
-  readonly tesseract_clear: (a: number) => void;
-  readonly tesseract_is_unlock: (a: number) => number;
-  readonly tesseract_lock: (a: number) => void;
-  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_save: (a: number, b: number) => void;
-  readonly tesseract_subscribe: (a: number) => number;
-  readonly tesseract_load_from_storage: (a: number, b: number) => void;
+  readonly config_minimal_basic: () => number;
+  readonly config_minimal_with_relay: (a: number, b: number) => number;
   readonly generate_name: (a: number) => void;
   readonly __wbg_raygunbox_free: (a: number) => void;
   readonly raygunbox_create_conversation: (a: number, b: number, c: number) => number;
@@ -1079,6 +1052,44 @@ export interface InitOutput {
   readonly message_attachments: (a: number) => number;
   readonly message_metadata: (a: number) => number;
   readonly message_replied: (a: number, b: number) => void;
+  readonly __wbg_groupsettings_free: (a: number) => void;
+  readonly groupsettings_members_can_add_participants: (a: number) => number;
+  readonly groupsettings_members_can_change_name: (a: number) => number;
+  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
+  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
+  readonly __wbg_asynciterator_free: (a: number) => void;
+  readonly asynciterator_next: (a: number) => number;
+  readonly __wbg_promiseresult_free: (a: number) => void;
+  readonly __wbg_get_promiseresult_done: (a: number) => number;
+  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
+  readonly promiseresult_new: (a: number) => number;
+  readonly promiseresult_value: (a: number) => number;
+  readonly __wbg_warpinstance_free: (a: number) => void;
+  readonly warpinstance_multipass: (a: number) => number;
+  readonly warpinstance_raygun: (a: number) => number;
+  readonly warpinstance_constellation: (a: number) => number;
+  readonly initialize: () => void;
+  readonly __wbg_constellationbox_free: (a: number) => void;
+  readonly __wbg_directconversationsettings_free: (a: number) => void;
+  readonly __wbg_tesseract_free: (a: number) => void;
+  readonly tesseract_new: () => number;
+  readonly tesseract_set_autosave: (a: number) => void;
+  readonly tesseract_autosave_enabled: (a: number) => number;
+  readonly tesseract_disable_key_check: (a: number) => void;
+  readonly tesseract_enable_key_check: (a: number) => void;
+  readonly tesseract_is_key_check_enabled: (a: number) => number;
+  readonly tesseract_exist: (a: number, b: number, c: number) => number;
+  readonly tesseract_clear: (a: number) => void;
+  readonly tesseract_is_unlock: (a: number) => number;
+  readonly tesseract_lock: (a: number) => void;
+  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_save: (a: number, b: number) => void;
+  readonly tesseract_subscribe: (a: number) => number;
+  readonly tesseract_load_from_storage: (a: number, b: number) => void;
   readonly __wbg_identityprofile_free: (a: number) => void;
   readonly identityprofile_new: (a: number, b: number, c: number) => number;
   readonly identityprofile_identity: (a: number) => number;
