@@ -1,6 +1,6 @@
 git submodule update --init --recursive --remote
 cd Warp/extensions/warp-ipfs
-wasm-pack build --target web
+RUSTFLAGS='-C target-feature=+atomics' wasm-pack build --target web
 
 cd ../../..
 
