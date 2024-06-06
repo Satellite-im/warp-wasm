@@ -19,6 +19,49 @@ export function generate_name(): string;
 export function initialize(): void;
 /**
 */
+export enum PinState {
+  Pin = 0,
+  Unpin = 1,
+}
+/**
+*/
+export enum IdentityUpdate {
+  Username = 0,
+  Picture = 1,
+  PicturePath = 2,
+  PictureStream = 3,
+  ClearPicture = 4,
+  Banner = 5,
+  BannerPath = 6,
+  BannerStream = 7,
+  ClearBanner = 8,
+  StatusMessage = 9,
+  ClearStatusMessage = 10,
+}
+/**
+*/
+export enum TesseractEvent {
+  Unlocked = 0,
+  Locked = 1,
+}
+/**
+*/
+export enum MessageEvent {
+/**
+* Event that represents typing
+*/
+  Typing = 0,
+}
+/**
+*/
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
+  Own = 3,
+}
+/**
+*/
 export enum MultiPassEventKindEnum {
   FriendRequestReceived = 0,
   FriendRequestSent = 1,
@@ -35,43 +78,6 @@ export enum MultiPassEventKindEnum {
   BlockedBy = 12,
   Unblocked = 13,
   UnblockedBy = 14,
-}
-/**
-*/
-export enum MessageEvent {
-/**
-* Event that represents typing
-*/
-  Typing = 0,
-}
-/**
-*/
-export enum PinState {
-  Pin = 0,
-  Unpin = 1,
-}
-/**
-*/
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
-  Own = 3,
-}
-/**
-*/
-export enum IdentityUpdate {
-  Username = 0,
-  Picture = 1,
-  PicturePath = 2,
-  PictureStream = 3,
-  ClearPicture = 4,
-  Banner = 5,
-  BannerPath = 6,
-  BannerStream = 7,
-  ClearBanner = 8,
-  StatusMessage = 9,
-  ClearStatusMessage = 10,
 }
 /**
 */
@@ -119,12 +125,6 @@ export enum MessagesEnum {
   List = 0,
   Stream = 1,
   Page = 2,
-}
-/**
-*/
-export enum TesseractEvent {
-  Unlocked = 0,
-  Locked = 1,
 }
 /**
 */
@@ -198,6 +198,13 @@ export class ConstellationBox {
 * @returns {Promise<any>}
 */
   get_buffer(name: string): Promise<any>;
+/**
+* @param {string} name
+* @param {number | undefined} total_size
+* @param {ReadableStream} stream
+* @returns {Promise<AsyncIterator>}
+*/
+  put_stream(name: string, total_size: number | undefined, stream: ReadableStream): Promise<AsyncIterator>;
 /**
 * @param {string} name
 * @returns {Promise<AsyncIterator>}
@@ -664,6 +671,61 @@ export class IdentityProfile {
 * @returns {string | undefined}
 */
   passphrase(): string | undefined;
+}
+/**
+*/
+export class IntoUnderlyingByteSource {
+  free(): void;
+/**
+* @param {ReadableByteStreamController} controller
+*/
+  start(controller: ReadableByteStreamController): void;
+/**
+* @param {ReadableByteStreamController} controller
+* @returns {Promise<any>}
+*/
+  pull(controller: ReadableByteStreamController): Promise<any>;
+/**
+*/
+  cancel(): void;
+/**
+*/
+  readonly autoAllocateChunkSize: number;
+/**
+*/
+  readonly type: string;
+}
+/**
+*/
+export class IntoUnderlyingSink {
+  free(): void;
+/**
+* @param {any} chunk
+* @returns {Promise<any>}
+*/
+  write(chunk: any): Promise<any>;
+/**
+* @returns {Promise<any>}
+*/
+  close(): Promise<any>;
+/**
+* @param {any} reason
+* @returns {Promise<any>}
+*/
+  abort(reason: any): Promise<any>;
+}
+/**
+*/
+export class IntoUnderlyingSource {
+  free(): void;
+/**
+* @param {ReadableStreamDefaultController} controller
+* @returns {Promise<any>}
+*/
+  pull(controller: ReadableStreamDefaultController): Promise<any>;
+/**
+*/
+  cancel(): void;
 }
 /**
 */
@@ -1417,6 +1479,24 @@ export interface InitOutput {
   readonly message_attachments: (a: number) => number;
   readonly message_metadata: (a: number) => number;
   readonly message_replied: (a: number, b: number) => void;
+  readonly __wbg_groupsettings_free: (a: number) => void;
+  readonly groupsettings_members_can_add_participants: (a: number) => number;
+  readonly groupsettings_members_can_change_name: (a: number) => number;
+  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
+  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
+  readonly __wbg_asynciterator_free: (a: number) => void;
+  readonly asynciterator_next: (a: number) => number;
+  readonly __wbg_promiseresult_free: (a: number) => void;
+  readonly __wbg_get_promiseresult_done: (a: number) => number;
+  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
+  readonly promiseresult_new: (a: number) => number;
+  readonly promiseresult_value: (a: number) => number;
+  readonly __wbg_warpinstance_free: (a: number) => void;
+  readonly warpinstance_multipass: (a: number) => number;
+  readonly warpinstance_raygun: (a: number) => number;
+  readonly warpinstance_constellation: (a: number) => number;
+  readonly initialize: () => void;
+  readonly __wbg_directconversationsettings_free: (a: number) => void;
   readonly __wbg_identityprofile_free: (a: number) => void;
   readonly identityprofile_new: (a: number, b: number, c: number) => number;
   readonly identityprofile_identity: (a: number) => number;
@@ -1459,12 +1539,14 @@ export interface InitOutput {
   readonly __wbg_multipasseventkind_free: (a: number) => void;
   readonly multipasseventkind_kind: (a: number) => number;
   readonly multipasseventkind_did: (a: number, b: number) => void;
+  readonly __wbg_hash_free: (a: number) => void;
   readonly __wbg_constellationbox_free: (a: number) => void;
   readonly constellationbox_modified: (a: number) => number;
   readonly constellationbox_root_directory: (a: number) => number;
   readonly constellationbox_max_size: (a: number) => number;
   readonly constellationbox_put_buffer: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly constellationbox_get_buffer: (a: number, b: number, c: number) => number;
+  readonly constellationbox_put_stream: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly constellationbox_get_stream: (a: number, b: number, c: number) => number;
   readonly constellationbox_remove: (a: number, b: number, c: number, d: number) => number;
   readonly constellationbox_rename: (a: number, b: number, c: number, d: number, e: number) => number;
@@ -1562,28 +1644,23 @@ export interface InitOutput {
   readonly tesseract_save: (a: number, b: number) => void;
   readonly tesseract_subscribe: (a: number) => number;
   readonly tesseract_load_from_storage: (a: number, b: number) => void;
-  readonly __wbg_hash_free: (a: number) => void;
-  readonly __wbg_groupsettings_free: (a: number) => void;
-  readonly groupsettings_members_can_add_participants: (a: number) => number;
-  readonly groupsettings_members_can_change_name: (a: number) => number;
-  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
-  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
-  readonly __wbg_asynciterator_free: (a: number) => void;
-  readonly asynciterator_next: (a: number) => number;
-  readonly __wbg_promiseresult_free: (a: number) => void;
-  readonly __wbg_get_promiseresult_done: (a: number) => number;
-  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
-  readonly promiseresult_new: (a: number) => number;
-  readonly promiseresult_value: (a: number) => number;
-  readonly __wbg_warpinstance_free: (a: number) => void;
-  readonly warpinstance_multipass: (a: number) => number;
-  readonly warpinstance_raygun: (a: number) => number;
-  readonly warpinstance_constellation: (a: number) => number;
-  readonly initialize: () => void;
-  readonly __wbg_directconversationsettings_free: (a: number) => void;
+  readonly __wbg_intounderlyingsource_free: (a: number) => void;
+  readonly intounderlyingsource_pull: (a: number, b: number) => number;
+  readonly intounderlyingsource_cancel: (a: number) => void;
+  readonly __wbg_intounderlyingbytesource_free: (a: number) => void;
+  readonly intounderlyingbytesource_type: (a: number, b: number) => void;
+  readonly intounderlyingbytesource_autoAllocateChunkSize: (a: number) => number;
+  readonly intounderlyingbytesource_start: (a: number, b: number) => void;
+  readonly intounderlyingbytesource_pull: (a: number, b: number) => number;
+  readonly intounderlyingbytesource_cancel: (a: number) => void;
+  readonly __wbg_intounderlyingsink_free: (a: number) => void;
+  readonly intounderlyingsink_write: (a: number, b: number) => number;
+  readonly intounderlyingsink_close: (a: number) => number;
+  readonly intounderlyingsink_abort: (a: number, b: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
+  readonly wasm_bindgen__convert__closures__invoke1_mut__hadcd974251a5a328: (a: number, b: number, c: number) => void;
   readonly wasm_bindgen__convert__closures__invoke1_mut__hb5a2d032974abeff: (a: number, b: number, c: number) => void;
   readonly wasm_bindgen__convert__closures__invoke0_mut__he120708a7692d5b4: (a: number, b: number) => void;
   readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h3beff7ac42f30698: (a: number, b: number, c: number) => void;
