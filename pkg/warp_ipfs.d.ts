@@ -1,6 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+*/
+export function initialize(): void;
+/**
 * Used to generate a random user name
 *
 * # Example
@@ -14,9 +17,6 @@
 * @returns {string}
 */
 export function generate_name(): string;
-/**
-*/
-export function initialize(): void;
 /**
 */
 export enum MultiPassEventKindEnum {
@@ -38,24 +38,11 @@ export enum MultiPassEventKindEnum {
 }
 /**
 */
-export enum IdentityUpdate {
-  Username = 0,
-  Picture = 1,
-  PicturePath = 2,
-  PictureStream = 3,
-  ClearPicture = 4,
-  Banner = 5,
-  BannerPath = 6,
-  BannerStream = 7,
-  ClearBanner = 8,
-  StatusMessage = 9,
-  ClearStatusMessage = 10,
-}
-/**
-*/
-export enum ReactionState {
-  Add = 0,
-  Remove = 1,
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
+  Own = 3,
 }
 /**
 */
@@ -71,10 +58,68 @@ export enum TesseractEvent {
 }
 /**
 */
+export enum MessageType {
+/**
+* Regular message sent or received
+*/
+  Message = 0,
+/**
+* Attachment; Can represent a file, image, etc., which can be from
+* constellation or sent directly
+*/
+  Attachment = 1,
+/**
+* Event sent as a message.
+* TBD
+*/
+  Event = 2,
+}
+/**
+*/
+export enum MessageEvent {
+/**
+* Event that represents typing
+*/
+  Typing = 0,
+}
+/**
+*/
+export enum ReactionState {
+  Add = 0,
+  Remove = 1,
+}
+/**
+*/
 export enum MessagesEnum {
   List = 0,
   Stream = 1,
   Page = 2,
+}
+/**
+*/
+export enum IdentityUpdate {
+  Username = 0,
+  Picture = 1,
+  PicturePath = 2,
+  PictureStream = 3,
+  ClearPicture = 4,
+  Banner = 5,
+  BannerPath = 6,
+  BannerStream = 7,
+  ClearBanner = 8,
+  StatusMessage = 9,
+  ClearStatusMessage = 10,
+}
+/**
+* The type that `Item` represents
+*/
+export enum ItemType {
+  FileItem = 0,
+  DirectoryItem = 1,
+/**
+* Would be invalid or undetermined
+*/
+  InvalidItem = 2,
 }
 /**
 */
@@ -97,40 +142,6 @@ export enum MessageStatus {
 export enum PinState {
   Pin = 0,
   Unpin = 1,
-}
-/**
-*/
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
-  Own = 3,
-}
-/**
-*/
-export enum MessageEvent {
-/**
-* Event that represents typing
-*/
-  Typing = 0,
-}
-/**
-*/
-export enum MessageType {
-/**
-* Regular message sent or received
-*/
-  Message = 0,
-/**
-* Attachment; Can represent a file, image, etc., which can be from
-* constellation or sent directly
-*/
-  Attachment = 1,
-/**
-* Event sent as a message.
-* TBD
-*/
-  Event = 2,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
@@ -758,6 +769,16 @@ export class IntoUnderlyingSource {
 export class Item {
   free(): void;
 /**
+* @param {File} file
+* @returns {Item}
+*/
+  static new_file(file: File): Item;
+/**
+* @param {Directory} directory
+* @returns {Item}
+*/
+  static new_directory(directory: Directory): Item;
+/**
 * @returns {File | undefined}
 */
   file(): File | undefined;
@@ -765,6 +786,94 @@ export class Item {
 * @returns {Directory | undefined}
 */
   directory(): Directory | undefined;
+/**
+* @returns {string}
+*/
+  id(): string;
+/**
+* @returns {Date}
+*/
+  creation(): Date;
+/**
+* @returns {Date}
+*/
+  modified(): Date;
+/**
+* @returns {string}
+*/
+  name(): string;
+/**
+* @returns {string}
+*/
+  description(): string;
+/**
+* @returns {number}
+*/
+  size(): number;
+/**
+* @returns {any}
+*/
+  thumbnail_format(): any;
+/**
+* @returns {Uint8Array}
+*/
+  thumbnail(): Uint8Array;
+/**
+* @returns {boolean}
+*/
+  favorite(): boolean;
+/**
+* @param {boolean} fav
+*/
+  set_favorite(fav: boolean): void;
+/**
+* @param {string} name
+*/
+  rename(name: string): void;
+/**
+* @returns {boolean}
+*/
+  is_directory(): boolean;
+/**
+* @returns {boolean}
+*/
+  is_file(): boolean;
+/**
+* @returns {ItemType}
+*/
+  item_type(): ItemType;
+/**
+* @param {string} desc
+*/
+  set_description(desc: string): void;
+/**
+* @param {Uint8Array} data
+*/
+  set_thumbnail(data: Uint8Array): void;
+/**
+* @param {any} format
+*/
+  set_thumbnail_format(format: any): void;
+/**
+* @param {number} size
+*/
+  set_size(size: number): void;
+/**
+* @returns {string}
+*/
+  path(): string;
+/**
+* @param {string} new_path
+*/
+  set_path(new_path: string): void;
+/**
+* @returns {Directory}
+*/
+  get_directory(): Directory;
+/**
+* @returns {File}
+*/
+  get_file(): File;
 }
 /**
 */
@@ -1441,6 +1550,67 @@ export interface InitOutput {
   readonly config_minimal_testing: () => number;
   readonly config_minimal_basic: () => number;
   readonly config_minimal_with_relay: (a: number, b: number) => number;
+  readonly __wbg_hash_free: (a: number) => void;
+  readonly __wbg_groupsettings_free: (a: number) => void;
+  readonly groupsettings_members_can_add_participants: (a: number) => number;
+  readonly groupsettings_members_can_change_name: (a: number) => number;
+  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
+  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
+  readonly __wbg_asynciterator_free: (a: number) => void;
+  readonly asynciterator_next: (a: number) => number;
+  readonly __wbg_promiseresult_free: (a: number) => void;
+  readonly __wbg_get_promiseresult_done: (a: number) => number;
+  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
+  readonly promiseresult_new: (a: number) => number;
+  readonly promiseresult_value: (a: number) => number;
+  readonly __wbg_warpinstance_free: (a: number) => void;
+  readonly warpinstance_multipass: (a: number) => number;
+  readonly warpinstance_raygun: (a: number) => number;
+  readonly warpinstance_constellation: (a: number) => number;
+  readonly initialize: () => void;
+  readonly __wbg_directconversationsettings_free: (a: number) => void;
+  readonly __wbg_identityprofile_free: (a: number) => void;
+  readonly identityprofile_new: (a: number, b: number, c: number) => number;
+  readonly identityprofile_identity: (a: number) => number;
+  readonly identityprofile_set_identity: (a: number, b: number) => void;
+  readonly identityprofile_passphrase: (a: number, b: number) => void;
+  readonly __wbg_identity_free: (a: number) => void;
+  readonly identity_set_username: (a: number, b: number, c: number) => void;
+  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
+  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
+  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
+  readonly identity_set_created: (a: number, b: number) => void;
+  readonly identity_set_modified: (a: number, b: number) => void;
+  readonly identity_username: (a: number, b: number) => void;
+  readonly identity_status_message: (a: number, b: number) => void;
+  readonly identity_short_id: (a: number, b: number) => void;
+  readonly identity_did_key: (a: number, b: number) => void;
+  readonly identity_created: (a: number) => number;
+  readonly identity_modified: (a: number) => number;
+  readonly __wbg_multipassbox_free: (a: number) => void;
+  readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly multipassbox_get_identity: (a: number, b: number, c: number) => number;
+  readonly multipassbox_get_own_identity: (a: number) => number;
+  readonly multipassbox_update_identity: (a: number, b: number, c: number) => number;
+  readonly multipassbox_multipass_subscribe: (a: number) => number;
+  readonly multipassbox_send_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_accept_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_deny_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_close_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_received_friend_request_from: (a: number, b: number, c: number) => number;
+  readonly multipassbox_list_incoming_request: (a: number) => number;
+  readonly multipassbox_sent_friend_request_to: (a: number, b: number, c: number) => number;
+  readonly multipassbox_list_outgoing_request: (a: number) => number;
+  readonly multipassbox_remove_friend: (a: number, b: number, c: number) => number;
+  readonly multipassbox_block: (a: number, b: number, c: number) => number;
+  readonly multipassbox_unblock: (a: number, b: number, c: number) => number;
+  readonly multipassbox_block_list: (a: number) => number;
+  readonly multipassbox_is_blocked: (a: number, b: number, c: number) => number;
+  readonly multipassbox_list_friends: (a: number) => number;
+  readonly multipassbox_has_friend: (a: number, b: number, c: number) => number;
+  readonly __wbg_multipasseventkind_free: (a: number) => void;
+  readonly multipasseventkind_kind: (a: number) => number;
+  readonly multipasseventkind_did: (a: number, b: number) => void;
   readonly generate_name: (a: number) => void;
   readonly __wbg_raygunbox_free: (a: number) => void;
   readonly raygunbox_create_conversation: (a: number, b: number, c: number) => number;
@@ -1512,7 +1682,6 @@ export interface InitOutput {
   readonly message_attachments: (a: number) => number;
   readonly message_metadata: (a: number) => number;
   readonly message_replied: (a: number, b: number) => void;
-  readonly __wbg_hash_free: (a: number) => void;
   readonly __wbg_tesseract_free: (a: number) => void;
   readonly tesseract_new: () => number;
   readonly tesseract_set_autosave: (a: number) => void;
@@ -1532,24 +1701,6 @@ export interface InitOutput {
   readonly tesseract_save: (a: number, b: number) => void;
   readonly tesseract_subscribe: (a: number) => number;
   readonly tesseract_load_from_storage: (a: number, b: number) => void;
-  readonly __wbg_groupsettings_free: (a: number) => void;
-  readonly groupsettings_members_can_add_participants: (a: number) => number;
-  readonly groupsettings_members_can_change_name: (a: number) => number;
-  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
-  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
-  readonly __wbg_asynciterator_free: (a: number) => void;
-  readonly asynciterator_next: (a: number) => number;
-  readonly __wbg_promiseresult_free: (a: number) => void;
-  readonly __wbg_get_promiseresult_done: (a: number) => number;
-  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
-  readonly promiseresult_new: (a: number) => number;
-  readonly promiseresult_value: (a: number) => number;
-  readonly __wbg_warpinstance_free: (a: number) => void;
-  readonly warpinstance_multipass: (a: number) => number;
-  readonly warpinstance_raygun: (a: number) => number;
-  readonly warpinstance_constellation: (a: number) => number;
-  readonly initialize: () => void;
-  readonly __wbg_directconversationsettings_free: (a: number) => void;
   readonly __wbg_constellationbox_free: (a: number) => void;
   readonly constellationbox_modified: (a: number) => number;
   readonly constellationbox_root_directory: (a: number) => number;
@@ -1635,54 +1786,36 @@ export interface InitOutput {
   readonly file_id: (a: number, b: number) => void;
   readonly file_modified: (a: number) => number;
   readonly __wbg_item_free: (a: number) => void;
+  readonly item_new_file: (a: number) => number;
+  readonly item_new_directory: (a: number) => number;
   readonly item_file: (a: number) => number;
   readonly item_directory: (a: number) => number;
+  readonly item_id: (a: number, b: number) => void;
+  readonly item_creation: (a: number) => number;
+  readonly item_modified: (a: number) => number;
+  readonly item_name: (a: number, b: number) => void;
+  readonly item_description: (a: number, b: number) => void;
+  readonly item_size: (a: number) => number;
+  readonly item_thumbnail_format: (a: number) => number;
+  readonly item_thumbnail: (a: number, b: number) => void;
+  readonly item_favorite: (a: number) => number;
+  readonly item_set_favorite: (a: number, b: number) => void;
+  readonly item_rename: (a: number, b: number, c: number, d: number) => void;
+  readonly item_is_directory: (a: number) => number;
+  readonly item_is_file: (a: number) => number;
+  readonly item_set_description: (a: number, b: number, c: number) => void;
+  readonly item_set_thumbnail: (a: number, b: number, c: number) => void;
+  readonly item_set_thumbnail_format: (a: number, b: number) => void;
+  readonly item_set_size: (a: number, b: number, c: number) => void;
+  readonly item_path: (a: number, b: number) => void;
+  readonly item_set_path: (a: number, b: number, c: number) => void;
+  readonly item_get_directory: (a: number, b: number) => void;
+  readonly item_get_file: (a: number, b: number) => void;
   readonly file_name: (a: number, b: number) => void;
   readonly file_favorite: (a: number) => number;
   readonly file_creation: (a: number) => number;
   readonly file_thumbnail_reference: (a: number, b: number) => void;
-  readonly __wbg_identityprofile_free: (a: number) => void;
-  readonly identityprofile_new: (a: number, b: number, c: number) => number;
-  readonly identityprofile_identity: (a: number) => number;
-  readonly identityprofile_set_identity: (a: number, b: number) => void;
-  readonly identityprofile_passphrase: (a: number, b: number) => void;
-  readonly __wbg_identity_free: (a: number) => void;
-  readonly identity_set_username: (a: number, b: number, c: number) => void;
-  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
-  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
-  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
-  readonly identity_set_created: (a: number, b: number) => void;
-  readonly identity_set_modified: (a: number, b: number) => void;
-  readonly identity_username: (a: number, b: number) => void;
-  readonly identity_status_message: (a: number, b: number) => void;
-  readonly identity_short_id: (a: number, b: number) => void;
-  readonly identity_did_key: (a: number, b: number) => void;
-  readonly identity_created: (a: number) => number;
-  readonly identity_modified: (a: number) => number;
-  readonly __wbg_multipassbox_free: (a: number) => void;
-  readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly multipassbox_get_identity: (a: number, b: number, c: number) => number;
-  readonly multipassbox_get_own_identity: (a: number) => number;
-  readonly multipassbox_update_identity: (a: number, b: number, c: number) => number;
-  readonly multipassbox_multipass_subscribe: (a: number) => number;
-  readonly multipassbox_send_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_accept_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_deny_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_close_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_received_friend_request_from: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_incoming_request: (a: number) => number;
-  readonly multipassbox_sent_friend_request_to: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_outgoing_request: (a: number) => number;
-  readonly multipassbox_remove_friend: (a: number, b: number, c: number) => number;
-  readonly multipassbox_block: (a: number, b: number, c: number) => number;
-  readonly multipassbox_unblock: (a: number, b: number, c: number) => number;
-  readonly multipassbox_block_list: (a: number) => number;
-  readonly multipassbox_is_blocked: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_friends: (a: number) => number;
-  readonly multipassbox_has_friend: (a: number, b: number, c: number) => number;
-  readonly __wbg_multipasseventkind_free: (a: number) => void;
-  readonly multipasseventkind_kind: (a: number) => number;
-  readonly multipasseventkind_did: (a: number, b: number) => void;
+  readonly item_item_type: (a: number) => number;
   readonly __wbg_intounderlyingsource_free: (a: number) => void;
   readonly intounderlyingsource_pull: (a: number, b: number) => number;
   readonly intounderlyingsource_cancel: (a: number) => void;
