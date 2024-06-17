@@ -1,6 +1,6 @@
 {
   "name": "warp-wasm",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Web Assembly TypeScript library for interfacing with Warp.",
   "main": "pkg/warp_ipfs.js",
   "types": "pkg/warp_ipfs.d.ts",
