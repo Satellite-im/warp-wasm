@@ -20,9 +20,7 @@ function takeObject(idx) {
     return ret;
 }
 
-const cachedTextDecoder = (typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8', { ignoreBOM: true, fatal: true }) : { decode: () => { throw Error('TextDecoder not available') } } );
-
-if (typeof TextDecoder !== 'undefined') { cachedTextDecoder.decode(); };
+let WASM_VECTOR_LEN = 0;
 
 let cachedUint8Memory0 = null;
 
@@ -32,22 +30,6 @@ function getUint8Memory0() {
     }
     return cachedUint8Memory0;
 }
-
-function getStringFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
-}
-
-function addHeapObject(obj) {
-    if (heap_next === heap.length) heap.push(heap.length + 1);
-    const idx = heap_next;
-    heap_next = heap[idx];
-
-    heap[idx] = obj;
-    return idx;
-}
-
-let WASM_VECTOR_LEN = 0;
 
 const cachedTextEncoder = (typeof TextEncoder !== 'undefined' ? new TextEncoder('utf-8') : { encode: () => { throw Error('TextEncoder not available') } } );
 
@@ -114,6 +96,24 @@ function getInt32Memory0() {
         cachedInt32Memory0 = new Int32Array(wasm.memory.buffer);
     }
     return cachedInt32Memory0;
+}
+
+function addHeapObject(obj) {
+    if (heap_next === heap.length) heap.push(heap.length + 1);
+    const idx = heap_next;
+    heap_next = heap[idx];
+
+    heap[idx] = obj;
+    return idx;
+}
+
+const cachedTextDecoder = (typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8', { ignoreBOM: true, fatal: true }) : { decode: () => { throw Error('TextDecoder not available') } } );
+
+if (typeof TextDecoder !== 'undefined') { cachedTextDecoder.decode(); };
+
+function getStringFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
 let cachedFloat64Memory0 = null;
@@ -290,6 +290,35 @@ function passArrayJsValueToWasm0(array, malloc) {
     WASM_VECTOR_LEN = array.length;
     return ptr;
 }
+
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8Memory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getUint32Memory0();
+    const slice = mem.subarray(ptr / 4, ptr / 4 + len);
+    const result = [];
+    for (let i = 0; i < slice.length; i++) {
+        result.push(takeObject(slice[i]));
+    }
+    return result;
+}
+
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len);
+}
+/**
+*/
+export function initialize() {
+    wasm.initialize();
+}
+
 /**
 * Used to generate a random user name
 *
@@ -320,34 +349,6 @@ export function generate_name() {
     }
 }
 
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getUint32Memory0();
-    const slice = mem.subarray(ptr / 4, ptr / 4 + len);
-    const result = [];
-    for (let i = 0; i < slice.length; i++) {
-        result.push(takeObject(slice[i]));
-    }
-    return result;
-}
-
-function passArray8ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 1, 1) >>> 0;
-    getUint8Memory0().set(arg, ptr / 1);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
-}
-
-function getArrayU8FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len);
-}
-/**
-*/
-export function initialize() {
-    wasm.initialize();
-}
-
 function handleError(f, args) {
     try {
         return f.apply(this, args);
@@ -355,25 +356,10 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_693(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_705(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h78ef80c4d5e3ad7c(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
-/**
-*/
-export const MessageStatus = Object.freeze({
-/**
-* If a message has not been sent.
-*/
-NotSent:0,"0":"NotSent",
-/**
-* If a message has been sent, either directly or through a third party service
-*/
-Sent:1,"1":"Sent",
-/**
-* Confirmation of message being delivered. May be used in the future
-*/
-Delivered:2,"2":"Delivered", });
 /**
 */
 export const MessagesEnum = Object.freeze({ List:0,"0":"List",Stream:1,"1":"Stream",Page:2,"2":"Page", });
@@ -387,16 +373,25 @@ export const ItemType = Object.freeze({ FileItem:0,"0":"FileItem",DirectoryItem:
 InvalidItem:2,"2":"InvalidItem", });
 /**
 */
+export const IdentityUpdate = Object.freeze({ Username:0,"0":"Username",Picture:1,"1":"Picture",PicturePath:2,"2":"PicturePath",PictureStream:3,"3":"PictureStream",ClearPicture:4,"4":"ClearPicture",Banner:5,"5":"Banner",BannerPath:6,"6":"BannerPath",BannerStream:7,"7":"BannerStream",ClearBanner:8,"8":"ClearBanner",StatusMessage:9,"9":"StatusMessage",ClearStatusMessage:10,"10":"ClearStatusMessage", });
+/**
+*/
 export const ReactionState = Object.freeze({ Add:0,"0":"Add",Remove:1,"1":"Remove", });
+/**
+*/
+export const TesseractEvent = Object.freeze({ Unlocked:0,"0":"Unlocked",Locked:1,"1":"Locked", });
+/**
+*/
+export const Identifier = Object.freeze({ DID:0,"0":"DID",DIDList:1,"1":"DIDList",Username:2,"2":"Username", });
 /**
 */
 export const PinState = Object.freeze({ Pin:0,"0":"Pin",Unpin:1,"1":"Unpin", });
 /**
 */
-export const EmbedState = Object.freeze({ Enabled:0,"0":"Enabled",Disable:1,"1":"Disable", });
+export const MultiPassEventKindEnum = Object.freeze({ FriendRequestReceived:0,"0":"FriendRequestReceived",FriendRequestSent:1,"1":"FriendRequestSent",IncomingFriendRequestRejected:2,"2":"IncomingFriendRequestRejected",OutgoingFriendRequestRejected:3,"3":"OutgoingFriendRequestRejected",IncomingFriendRequestClosed:4,"4":"IncomingFriendRequestClosed",OutgoingFriendRequestClosed:5,"5":"OutgoingFriendRequestClosed",FriendAdded:6,"6":"FriendAdded",FriendRemoved:7,"7":"FriendRemoved",IdentityOnline:8,"8":"IdentityOnline",IdentityOffline:9,"9":"IdentityOffline",IdentityUpdate:10,"10":"IdentityUpdate",Blocked:11,"11":"Blocked",BlockedBy:12,"12":"BlockedBy",Unblocked:13,"13":"Unblocked",UnblockedBy:14,"14":"UnblockedBy", });
 /**
 */
-export const MultiPassEventKindEnum = Object.freeze({ FriendRequestReceived:0,"0":"FriendRequestReceived",FriendRequestSent:1,"1":"FriendRequestSent",IncomingFriendRequestRejected:2,"2":"IncomingFriendRequestRejected",OutgoingFriendRequestRejected:3,"3":"OutgoingFriendRequestRejected",IncomingFriendRequestClosed:4,"4":"IncomingFriendRequestClosed",OutgoingFriendRequestClosed:5,"5":"OutgoingFriendRequestClosed",FriendAdded:6,"6":"FriendAdded",FriendRemoved:7,"7":"FriendRemoved",IdentityOnline:8,"8":"IdentityOnline",IdentityOffline:9,"9":"IdentityOffline",IdentityUpdate:10,"10":"IdentityUpdate",Blocked:11,"11":"Blocked",BlockedBy:12,"12":"BlockedBy",Unblocked:13,"13":"Unblocked",UnblockedBy:14,"14":"UnblockedBy", });
+export const EmbedState = Object.freeze({ Enabled:0,"0":"Enabled",Disable:1,"1":"Disable", });
 /**
 */
 export const MessageEvent = Object.freeze({
@@ -404,12 +399,6 @@ export const MessageEvent = Object.freeze({
 * Event that represents typing
 */
 Typing:0,"0":"Typing", });
-/**
-*/
-export const Identifier = Object.freeze({ DID:0,"0":"DID",DIDList:1,"1":"DIDList",Username:2,"2":"Username", });
-/**
-*/
-export const TesseractEvent = Object.freeze({ Unlocked:0,"0":"Unlocked",Locked:1,"1":"Locked", });
 /**
 */
 export const MessageType = Object.freeze({
@@ -429,7 +418,19 @@ Attachment:1,"1":"Attachment",
 Event:2,"2":"Event", });
 /**
 */
-export const IdentityUpdate = Object.freeze({ Username:0,"0":"Username",Picture:1,"1":"Picture",PicturePath:2,"2":"PicturePath",PictureStream:3,"3":"PictureStream",ClearPicture:4,"4":"ClearPicture",Banner:5,"5":"Banner",BannerPath:6,"6":"BannerPath",BannerStream:7,"7":"BannerStream",ClearBanner:8,"8":"ClearBanner",StatusMessage:9,"9":"StatusMessage",ClearStatusMessage:10,"10":"ClearStatusMessage", });
+export const MessageStatus = Object.freeze({
+/**
+* If a message has not been sent.
+*/
+NotSent:0,"0":"NotSent",
+/**
+* If a message has been sent, either directly or through a third party service
+*/
+Sent:1,"1":"Sent",
+/**
+* Confirmation of message being delivered. May be used in the future
+*/
+Delivered:2,"2":"Delivered", });
 
 const AsyncIteratorFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
@@ -463,6 +464,98 @@ export class AsyncIterator {
     */
     next() {
         const ret = wasm.asynciterator_next(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+}
+
+const AttachmentFileFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_attachmentfile_free(ptr >>> 0));
+/**
+*/
+export class AttachmentFile {
+
+    static __unwrap(jsValue) {
+        if (!(jsValue instanceof AttachmentFile)) {
+            return 0;
+        }
+        return jsValue.__destroy_into_raw();
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        AttachmentFileFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_attachmentfile_free(ptr);
+    }
+    /**
+    * @param {string} file
+    * @param {ReadableStream | undefined} [stream]
+    */
+    constructor(file, stream) {
+        const ptr0 = passStringToWasm0(file, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.attachmentfile_new(ptr0, len0, isLikeNone(stream) ? 0 : addHeapObject(stream));
+        this.__wbg_ptr = ret >>> 0;
+        return this;
+    }
+}
+
+const AttachmentResultFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_attachmentresult_free(ptr >>> 0));
+/**
+*/
+export class AttachmentResult {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(AttachmentResult.prototype);
+        obj.__wbg_ptr = ptr;
+        AttachmentResultFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        AttachmentResultFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_attachmentresult_free(ptr);
+    }
+    /**
+    * @returns {string}
+    */
+    get_file() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.attachmentresult_get_file(retptr, this.__wbg_ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+    * @returns {Promise<Promise<any>>}
+    */
+    next() {
+        const ret = wasm.attachmentresult_next(this.__wbg_ptr);
         return takeObject(ret);
     }
 }
@@ -3654,6 +3747,86 @@ export class RayGunBox {
         return takeObject(ret);
     }
     /**
+    * @param {string} conversation_id
+    * @param {string} name
+    * @returns {Promise<void>}
+    */
+    update_conversation_name(conversation_id, name) {
+        const ptr0 = passStringToWasm0(conversation_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.raygunbox_update_conversation_name(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return takeObject(ret);
+    }
+    /**
+    * Add a recipient to the conversation
+    * @param {string} conversation_id
+    * @param {string} recipient
+    * @returns {Promise<void>}
+    */
+    add_recipient(conversation_id, recipient) {
+        const ptr0 = passStringToWasm0(conversation_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(recipient, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.raygunbox_add_recipient(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return takeObject(ret);
+    }
+    /**
+    * Remove a recipient from the conversation
+    * @param {string} conversation_id
+    * @param {string} recipient
+    * @returns {Promise<void>}
+    */
+    remove_recipient(conversation_id, recipient) {
+        const ptr0 = passStringToWasm0(conversation_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(recipient, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.raygunbox_remove_recipient(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return takeObject(ret);
+    }
+    /**
+    * Send files to a conversation.
+    * If no files is provided in the array, it will throw an error
+    * @param {string} conversation_id
+    * @param {string | undefined} message_id
+    * @param {(AttachmentFile)[]} files
+    * @param {(string)[]} message
+    * @returns {Promise<AttachmentResult>}
+    */
+    attach(conversation_id, message_id, files, message) {
+        const ptr0 = passStringToWasm0(conversation_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        var ptr1 = isLikeNone(message_id) ? 0 : passStringToWasm0(message_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len1 = WASM_VECTOR_LEN;
+        const ptr2 = passArrayJsValueToWasm0(files, wasm.__wbindgen_malloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ptr3 = passArrayJsValueToWasm0(message, wasm.__wbindgen_malloc);
+        const len3 = WASM_VECTOR_LEN;
+        const ret = wasm.raygunbox_attach(this.__wbg_ptr, ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+        return takeObject(ret);
+    }
+    /**
+    * Stream a file that been attached to a message
+    * Note: Must use the filename associated when downloading
+    * @param {string} conversation_id
+    * @param {string} message_id
+    * @param {string} file
+    * @returns {Promise<AsyncIterator>}
+    */
+    download_stream(conversation_id, message_id, file) {
+        const ptr0 = passStringToWasm0(conversation_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(message_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(file, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.raygunbox_download_stream(this.__wbg_ptr, ptr0, len0, ptr1, len1, ptr2, len2);
+        return takeObject(ret);
+    }
+    /**
     * Subscribe to an stream of events from the conversation
     * @param {string} conversation_id
     * @returns {Promise<AsyncIterator>}
@@ -4172,25 +4345,20 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_error_new = function(arg0, arg1) {
-        const ret = new Error(getStringFromWasm0(arg0, arg1));
+    imports.wbg.__wbindgen_string_get = function(arg0, arg1) {
+        const obj = getObject(arg1);
+        const ret = typeof(obj) === 'string' ? obj : undefined;
+        var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len1 = WASM_VECTOR_LEN;
+        getInt32Memory0()[arg0 / 4 + 1] = len1;
+        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+    };
+    imports.wbg.__wbindgen_number_new = function(arg0) {
+        const ret = arg0;
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_messagereference_new = function(arg0) {
         const ret = MessageReference.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_message_new = function(arg0) {
-        const ret = Message.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbindgen_boolean_get = function(arg0) {
-        const v = getObject(arg0);
-        const ret = typeof(v) === 'boolean' ? (v ? 1 : 0) : 2;
-        return ret;
-    };
-    imports.wbg.__wbindgen_number_new = function(arg0) {
-        const ret = arg0;
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_identityprofile_new = function(arg0) {
@@ -4213,16 +4381,21 @@ function __wbg_get_imports() {
         const ret = Item.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_string_get = function(arg0, arg1) {
-        const obj = getObject(arg1);
-        const ret = typeof(obj) === 'string' ? obj : undefined;
-        var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        var len1 = WASM_VECTOR_LEN;
-        getInt32Memory0()[arg0 / 4 + 1] = len1;
-        getInt32Memory0()[arg0 / 4 + 0] = ptr1;
+    imports.wbg.__wbindgen_object_clone_ref = function(arg0) {
+        const ret = getObject(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_boolean_get = function(arg0) {
+        const v = getObject(arg0);
+        const ret = typeof(v) === 'boolean' ? (v ? 1 : 0) : 2;
+        return ret;
     };
     imports.wbg.__wbg_conversation_new = function(arg0) {
         const ret = Conversation.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_attachmentresult_new = function(arg0) {
+        const ret = AttachmentResult.__wrap(arg0);
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_identity_new = function(arg0) {
@@ -4233,8 +4406,24 @@ function __wbg_get_imports() {
         const ret = getStringFromWasm0(arg0, arg1);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_object_clone_ref = function(arg0) {
-        const ret = getObject(arg0);
+    imports.wbg.__wbg_message_new = function(arg0) {
+        const ret = Message.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_error_new = function(arg0, arg1) {
+        const ret = new Error(getStringFromWasm0(arg0, arg1));
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_item_unwrap = function(arg0) {
+        const ret = Item.__unwrap(takeObject(arg0));
+        return ret;
+    };
+    imports.wbg.__wbg_warpinstance_new = function(arg0) {
+        const ret = WarpInstance.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_multipasseventkind_new = function(arg0) {
+        const ret = MultiPassEventKind.__wrap(arg0);
         return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_number_get = function(arg0, arg1) {
@@ -4243,9 +4432,16 @@ function __wbg_get_imports() {
         getFloat64Memory0()[arg0 / 8 + 1] = isLikeNone(ret) ? 0 : ret;
         getInt32Memory0()[arg0 / 4 + 0] = !isLikeNone(ret);
     };
-    imports.wbg.__wbindgen_is_object = function(arg0) {
-        const val = getObject(arg0);
-        const ret = typeof(val) === 'object' && val !== null;
+    imports.wbg.__wbindgen_is_string = function(arg0) {
+        const ret = typeof(getObject(arg0)) === 'string';
+        return ret;
+    };
+    imports.wbg.__wbindgen_is_null = function(arg0) {
+        const ret = getObject(arg0) === null;
+        return ret;
+    };
+    imports.wbg.__wbg_attachmentfile_unwrap = function(arg0) {
+        const ret = AttachmentFile.__unwrap(takeObject(arg0));
         return ret;
     };
     imports.wbg.__wbindgen_is_bigint = function(arg0) {
@@ -4268,25 +4464,10 @@ function __wbg_get_imports() {
         const ret = getObject(arg0) in getObject(arg1);
         return ret;
     };
-    imports.wbg.__wbindgen_is_string = function(arg0) {
-        const ret = typeof(getObject(arg0)) === 'string';
+    imports.wbg.__wbindgen_is_object = function(arg0) {
+        const val = getObject(arg0);
+        const ret = typeof(val) === 'object' && val !== null;
         return ret;
-    };
-    imports.wbg.__wbg_item_unwrap = function(arg0) {
-        const ret = Item.__unwrap(takeObject(arg0));
-        return ret;
-    };
-    imports.wbg.__wbg_multipasseventkind_new = function(arg0) {
-        const ret = MultiPassEventKind.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbindgen_is_null = function(arg0) {
-        const ret = getObject(arg0) === null;
-        return ret;
-    };
-    imports.wbg.__wbg_warpinstance_new = function(arg0) {
-        const ret = WarpInstance.__wrap(arg0);
-        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_abda76e883ba8a5f = function() {
         const ret = new Error();
@@ -5026,7 +5207,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_693(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_705(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -5130,56 +5311,56 @@ function __wbg_get_imports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper12521 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 3771, __wbg_adapter_50);
+    imports.wbg.__wbindgen_closure_wrapper12582 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 3805, __wbg_adapter_50);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper14312 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 4784, __wbg_adapter_53);
+    imports.wbg.__wbindgen_closure_wrapper14374 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 4818, __wbg_adapter_53);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper15903 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5364, __wbg_adapter_56);
+    imports.wbg.__wbindgen_closure_wrapper15965 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5398, __wbg_adapter_56);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper16015 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5417, __wbg_adapter_59);
+    imports.wbg.__wbindgen_closure_wrapper16077 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5451, __wbg_adapter_59);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper16085 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5440, __wbg_adapter_62);
+    imports.wbg.__wbindgen_closure_wrapper16147 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5474, __wbg_adapter_62);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper16086 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5440, __wbg_adapter_62);
+    imports.wbg.__wbindgen_closure_wrapper16148 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5474, __wbg_adapter_62);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper16087 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5440, __wbg_adapter_62);
+    imports.wbg.__wbindgen_closure_wrapper16149 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5474, __wbg_adapter_62);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper17096 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5882, __wbg_adapter_69);
+    imports.wbg.__wbindgen_closure_wrapper17158 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5916, __wbg_adapter_69);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper17173 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5927, __wbg_adapter_72);
+    imports.wbg.__wbindgen_closure_wrapper17235 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5961, __wbg_adapter_72);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper17174 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5927, __wbg_adapter_72);
+    imports.wbg.__wbindgen_closure_wrapper17236 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5961, __wbg_adapter_72);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper17175 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 5927, __wbg_adapter_72);
+    imports.wbg.__wbindgen_closure_wrapper17237 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 5961, __wbg_adapter_72);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper20063 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 7117, __wbg_adapter_79);
+    imports.wbg.__wbindgen_closure_wrapper20125 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 7151, __wbg_adapter_79);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper22345 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 7732, __wbg_adapter_82);
+    imports.wbg.__wbindgen_closure_wrapper22407 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 7766, __wbg_adapter_82);
         return addHeapObject(ret);
     };
 
