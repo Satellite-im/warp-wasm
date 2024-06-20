@@ -19,64 +19,6 @@ export function initialize(): void;
 export function generate_name(): string;
 /**
 */
-export enum MessagesEnum {
-  List = 0,
-  Stream = 1,
-  Page = 2,
-}
-/**
-* The type that `Item` represents
-*/
-export enum ItemType {
-  FileItem = 0,
-  DirectoryItem = 1,
-/**
-* Would be invalid or undetermined
-*/
-  InvalidItem = 2,
-}
-/**
-*/
-export enum IdentityUpdate {
-  Username = 0,
-  Picture = 1,
-  PicturePath = 2,
-  PictureStream = 3,
-  ClearPicture = 4,
-  Banner = 5,
-  BannerPath = 6,
-  BannerStream = 7,
-  ClearBanner = 8,
-  StatusMessage = 9,
-  ClearStatusMessage = 10,
-}
-/**
-*/
-export enum ReactionState {
-  Add = 0,
-  Remove = 1,
-}
-/**
-*/
-export enum TesseractEvent {
-  Unlocked = 0,
-  Locked = 1,
-}
-/**
-*/
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
-}
-/**
-*/
-export enum PinState {
-  Pin = 0,
-  Unpin = 1,
-}
-/**
-*/
 export enum MultiPassEventKindEnum {
   FriendRequestReceived = 0,
   FriendRequestSent = 1,
@@ -96,17 +38,55 @@ export enum MultiPassEventKindEnum {
 }
 /**
 */
-export enum EmbedState {
-  Enabled = 0,
-  Disable = 1,
-}
-/**
-*/
 export enum MessageEvent {
 /**
 * Event that represents typing
 */
   Typing = 0,
+}
+/**
+*/
+export enum MessagesEnum {
+  List = 0,
+  Stream = 1,
+  Page = 2,
+}
+/**
+*/
+export enum MessageStatus {
+/**
+* If a message has not been sent.
+*/
+  NotSent = 0,
+/**
+* If a message has been sent, either directly or through a third party service
+*/
+  Sent = 1,
+/**
+* Confirmation of message being delivered. May be used in the future
+*/
+  Delivered = 2,
+}
+/**
+*/
+export enum IdentityUpdate {
+  Username = 0,
+  Picture = 1,
+  PicturePath = 2,
+  PictureStream = 3,
+  ClearPicture = 4,
+  Banner = 5,
+  BannerPath = 6,
+  BannerStream = 7,
+  ClearBanner = 8,
+  StatusMessage = 9,
+  ClearStatusMessage = 10,
+}
+/**
+*/
+export enum EmbedState {
+  Enabled = 0,
+  Disable = 1,
 }
 /**
 */
@@ -128,19 +108,39 @@ export enum MessageType {
 }
 /**
 */
-export enum MessageStatus {
+export enum PinState {
+  Pin = 0,
+  Unpin = 1,
+}
 /**
-* If a message has not been sent.
 */
-  NotSent = 0,
+export enum ReactionState {
+  Add = 0,
+  Remove = 1,
+}
 /**
-* If a message has been sent, either directly or through a third party service
+* The type that `Item` represents
 */
-  Sent = 1,
+export enum ItemType {
+  FileItem = 0,
+  DirectoryItem = 1,
 /**
-* Confirmation of message being delivered. May be used in the future
+* Would be invalid or undetermined
 */
-  Delivered = 2,
+  InvalidItem = 2,
+}
+/**
+*/
+export enum TesseractEvent {
+  Unlocked = 0,
+  Locked = 1,
+}
+/**
+*/
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
@@ -169,7 +169,7 @@ export class AttachmentResult {
 /**
 * @returns {string}
 */
-  get_file(): string;
+  get_message_id(): string;
 /**
 * @returns {Promise<Promise<any>>}
 */
@@ -1871,7 +1871,7 @@ export interface InitOutput {
   readonly __wbg_attachmentfile_free: (a: number) => void;
   readonly attachmentfile_new: (a: number, b: number, c: number) => number;
   readonly __wbg_attachmentresult_free: (a: number) => void;
-  readonly attachmentresult_get_file: (a: number, b: number) => void;
+  readonly attachmentresult_get_message_id: (a: number, b: number) => void;
   readonly attachmentresult_next: (a: number) => number;
   readonly __wbg_tesseract_free: (a: number) => void;
   readonly tesseract_new: () => number;
@@ -1909,12 +1909,12 @@ export interface InitOutput {
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
   readonly wasm_bindgen__convert__closures__invoke1_mut__hadcd974251a5a328: (a: number, b: number, c: number) => void;
-  readonly wasm_bindgen__convert__closures__invoke1_mut__hb5a2d032974abeff: (a: number, b: number, c: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke1_mut__hb5ed5caa2bf8b493: (a: number, b: number, c: number) => void;
   readonly wasm_bindgen__convert__closures__invoke0_mut__he120708a7692d5b4: (a: number, b: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h3beff7ac42f30698: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h91fdae060fad7c36: (a: number, b: number, c: number) => void;
-  readonly wasm_bindgen__convert__closures__invoke1_mut__h1b037a17eb910527: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h8c5bca55bd21737b: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hc247867d81b11828: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h118d4adb4212811b: (a: number, b: number, c: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke1_mut__h9b2aa3136d7f66f8: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h1389a07d71590a8c: (a: number, b: number, c: number) => void;
   readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__heefe87c8e0fb482a: (a: number, b: number, c: number) => void;
   readonly wasm_bindgen__convert__closures__invoke0_mut__hb78a60c7f34cf8d9: (a: number, b: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
