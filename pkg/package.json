@@ -5,7 +5,7 @@
     "warp_ipfs_bg.wasm",
     "warp_ipfs.js",
     "warp_ipfs.d.ts",
-    "warp_ipfs_bg.wasm.d.ts"
+    "pkg/warp_ipfs_bg.wasm.d.ts"
   ],
   "module": "warp_ipfs.js",
   "types": "warp_ipfs.d.ts",

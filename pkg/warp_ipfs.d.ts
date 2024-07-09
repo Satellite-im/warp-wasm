@@ -19,17 +19,18 @@ export function generate_name(): string;
 export function initialize(): void;
 /**
 */
-export enum TesseractEvent {
-  Unlocked = 0,
-  Locked = 1,
+export enum MessagesEnum {
+  List = 0,
+  Stream = 1,
+  Page = 2,
 }
 /**
 */
-export enum MessageEvent {
-/**
-* Event that represents typing
-*/
-  Typing = 0,
+export enum IdentityStatus {
+  Online = 0,
+  Away = 1,
+  Busy = 2,
+  Offline = 3,
 }
 /**
 * The type that `Item` represents
@@ -41,20 +42,6 @@ export enum ItemType {
 * Would be invalid or undetermined
 */
   InvalidItem = 2,
-}
-/**
-*/
-export enum Platform {
-  Desktop = 0,
-  Mobile = 1,
-  Web = 2,
-  Unknown = 3,
-}
-/**
-*/
-export enum PinState {
-  Pin = 0,
-  Unpin = 1,
 }
 /**
 */
@@ -76,12 +63,6 @@ export enum MessageType {
 }
 /**
 */
-export enum EmbedState {
-  Enabled = 0,
-  Disable = 1,
-}
-/**
-*/
 export enum MessageStatus {
 /**
 * If a message has not been sent.
@@ -95,13 +76,6 @@ export enum MessageStatus {
 * Confirmation of message being delivered. May be used in the future
 */
   Delivered = 2,
-}
-/**
-*/
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
 }
 /**
 */
@@ -124,6 +98,46 @@ export enum MultiPassEventKindEnum {
 }
 /**
 */
+export enum Platform {
+  Desktop = 0,
+  Mobile = 1,
+  Web = 2,
+  Unknown = 3,
+}
+/**
+*/
+export enum MessageEvent {
+/**
+* Event that represents typing
+*/
+  Typing = 0,
+}
+/**
+*/
+export enum TesseractEvent {
+  Unlocked = 0,
+  Locked = 1,
+}
+/**
+*/
+export enum ReactionState {
+  Add = 0,
+  Remove = 1,
+}
+/**
+*/
+export enum PinState {
+  Pin = 0,
+  Unpin = 1,
+}
+/**
+*/
+export enum EmbedState {
+  Enabled = 0,
+  Disable = 1,
+}
+/**
+*/
 export enum IdentityUpdate {
   Username = 0,
   Picture = 1,
@@ -139,24 +153,10 @@ export enum IdentityUpdate {
 }
 /**
 */
-export enum IdentityStatus {
-  Online = 0,
-  Away = 1,
-  Busy = 2,
-  Offline = 3,
-}
-/**
-*/
-export enum ReactionState {
-  Add = 0,
-  Remove = 1,
-}
-/**
-*/
-export enum MessagesEnum {
-  List = 0,
-  Stream = 1,
-  Page = 2,
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
@@ -737,6 +737,14 @@ export class Identity {
 */
 export class IdentityImage {
   free(): void;
+/**
+* @returns {Uint8Array}
+*/
+  data(): Uint8Array;
+/**
+* @returns {any}
+*/
+  image_type(): any;
 }
 /**
 * Profile containing the newly created `Identity` and a passphrase, if applicable.
@@ -1468,6 +1476,26 @@ export class RayGunBox {
 */
 export class Relationship {
   free(): void;
+/**
+* @returns {boolean}
+*/
+  friends(): boolean;
+/**
+* @returns {boolean}
+*/
+  received_friend_request(): boolean;
+/**
+* @returns {boolean}
+*/
+  sent_friend_request(): boolean;
+/**
+* @returns {boolean}
+*/
+  blocked(): boolean;
+/**
+* @returns {boolean}
+*/
+  blocked_by(): boolean;
 }
 /**
 * The key store that holds encrypted strings that can be used for later use.
@@ -1687,6 +1715,33 @@ export interface InitOutput {
   readonly config_minimal_testing: () => number;
   readonly config_minimal_basic: () => number;
   readonly config_minimal_with_relay: (a: number, b: number) => number;
+  readonly __wbg_tesseract_free: (a: number) => void;
+  readonly tesseract_new: () => number;
+  readonly tesseract_set_autosave: (a: number) => void;
+  readonly tesseract_autosave_enabled: (a: number) => number;
+  readonly tesseract_disable_key_check: (a: number) => void;
+  readonly tesseract_enable_key_check: (a: number) => void;
+  readonly tesseract_is_key_check_enabled: (a: number) => number;
+  readonly tesseract_exist: (a: number, b: number, c: number) => number;
+  readonly tesseract_clear: (a: number) => void;
+  readonly tesseract_is_unlock: (a: number) => number;
+  readonly tesseract_lock: (a: number) => void;
+  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_save: (a: number, b: number) => void;
+  readonly tesseract_subscribe: (a: number) => number;
+  readonly tesseract_load_from_storage: (a: number, b: number) => void;
+  readonly __wbg_asynciterator_free: (a: number) => void;
+  readonly asynciterator_next: (a: number) => number;
+  readonly __wbg_promiseresult_free: (a: number) => void;
+  readonly __wbg_get_promiseresult_done: (a: number) => number;
+  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
+  readonly promiseresult_new: (a: number) => number;
+  readonly promiseresult_value: (a: number) => number;
+  readonly generate_name: (a: number) => void;
   readonly __wbg_groupsettings_free: (a: number) => void;
   readonly groupsettings_members_can_add_participants: (a: number) => number;
   readonly groupsettings_members_can_change_name: (a: number) => number;
@@ -1723,6 +1778,8 @@ export interface InitOutput {
   readonly __wbg_multipasseventkind_free: (a: number) => void;
   readonly multipasseventkind_kind: (a: number) => number;
   readonly multipasseventkind_did: (a: number, b: number) => void;
+  readonly identityimage_data: (a: number, b: number) => void;
+  readonly identityimage_image_type: (a: number) => number;
   readonly __wbg_directconversationsettings_free: (a: number) => void;
   readonly __wbg_raygunbox_free: (a: number) => void;
   readonly raygunbox_create_conversation: (a: number, b: number, c: number) => number;
@@ -1806,7 +1863,6 @@ export interface InitOutput {
   readonly __wbg_attachmentresult_free: (a: number) => void;
   readonly attachmentresult_get_message_id: (a: number, b: number) => void;
   readonly attachmentresult_next: (a: number) => number;
-  readonly generate_name: (a: number) => void;
   readonly __wbg_identityprofile_free: (a: number) => void;
   readonly identityprofile_new: (a: number, b: number, c: number) => number;
   readonly identityprofile_identity: (a: number) => number;
@@ -1814,6 +1870,11 @@ export interface InitOutput {
   readonly identityprofile_passphrase: (a: number, b: number) => void;
   readonly __wbg_identityimage_free: (a: number) => void;
   readonly __wbg_relationship_free: (a: number) => void;
+  readonly relationship_friends: (a: number) => number;
+  readonly relationship_received_friend_request: (a: number) => number;
+  readonly relationship_sent_friend_request: (a: number) => number;
+  readonly relationship_blocked: (a: number) => number;
+  readonly relationship_blocked_by: (a: number) => number;
   readonly __wbg_identity_free: (a: number) => void;
   readonly identity_set_username: (a: number, b: number, c: number) => void;
   readonly identity_set_status_message: (a: number, b: number, c: number) => void;
@@ -1827,32 +1888,12 @@ export interface InitOutput {
   readonly identity_did_key: (a: number, b: number) => void;
   readonly identity_created: (a: number) => number;
   readonly identity_modified: (a: number) => number;
-  readonly __wbg_tesseract_free: (a: number) => void;
-  readonly tesseract_new: () => number;
-  readonly tesseract_set_autosave: (a: number) => void;
-  readonly tesseract_autosave_enabled: (a: number) => number;
-  readonly tesseract_disable_key_check: (a: number) => void;
-  readonly tesseract_enable_key_check: (a: number) => void;
-  readonly tesseract_is_key_check_enabled: (a: number) => number;
-  readonly tesseract_exist: (a: number, b: number, c: number) => number;
-  readonly tesseract_clear: (a: number) => void;
-  readonly tesseract_is_unlock: (a: number) => number;
-  readonly tesseract_lock: (a: number) => void;
-  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_save: (a: number, b: number) => void;
-  readonly tesseract_subscribe: (a: number) => number;
-  readonly tesseract_load_from_storage: (a: number, b: number) => void;
-  readonly __wbg_asynciterator_free: (a: number) => void;
-  readonly asynciterator_next: (a: number) => number;
-  readonly __wbg_promiseresult_free: (a: number) => void;
-  readonly __wbg_get_promiseresult_done: (a: number) => number;
-  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
-  readonly promiseresult_new: (a: number) => number;
-  readonly promiseresult_value: (a: number) => number;
+  readonly __wbg_hash_free: (a: number) => void;
+  readonly __wbg_warpinstance_free: (a: number) => void;
+  readonly warpinstance_multipass: (a: number) => number;
+  readonly warpinstance_raygun: (a: number) => number;
+  readonly warpinstance_constellation: (a: number) => number;
+  readonly initialize: () => void;
   readonly __wbg_constellationbox_free: (a: number) => void;
   readonly constellationbox_modified: (a: number) => number;
   readonly constellationbox_root_directory: (a: number) => number;
@@ -1968,12 +2009,6 @@ export interface InitOutput {
   readonly file_creation: (a: number) => number;
   readonly file_thumbnail_reference: (a: number, b: number) => void;
   readonly item_item_type: (a: number) => number;
-  readonly __wbg_hash_free: (a: number) => void;
-  readonly __wbg_warpinstance_free: (a: number) => void;
-  readonly warpinstance_multipass: (a: number) => number;
-  readonly warpinstance_raygun: (a: number) => number;
-  readonly warpinstance_constellation: (a: number) => number;
-  readonly initialize: () => void;
   readonly __wbg_intounderlyingsource_free: (a: number) => void;
   readonly intounderlyingsource_pull: (a: number, b: number) => number;
   readonly intounderlyingsource_cancel: (a: number) => void;
