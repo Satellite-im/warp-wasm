@@ -19,6 +19,13 @@ export function generate_name(): string;
 export function initialize(): void;
 /**
 */
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
+}
+/**
+*/
 export enum MessagesEnum {
   List = 0,
   Stream = 1,
@@ -26,56 +33,23 @@ export enum MessagesEnum {
 }
 /**
 */
-export enum IdentityStatus {
-  Online = 0,
-  Away = 1,
-  Busy = 2,
-  Offline = 3,
-}
-/**
-* The type that `Item` represents
-*/
-export enum ItemType {
-  FileItem = 0,
-  DirectoryItem = 1,
-/**
-* Would be invalid or undetermined
-*/
-  InvalidItem = 2,
+export enum ReactionState {
+  Add = 0,
+  Remove = 1,
 }
 /**
 */
-export enum MessageType {
+export enum MessageEvent {
 /**
-* Regular message sent or received
+* Event that represents typing
 */
-  Message = 0,
-/**
-* Attachment; Can represent a file, image, etc., which can be from
-* constellation or sent directly
-*/
-  Attachment = 1,
-/**
-* Event sent as a message.
-* TBD
-*/
-  Event = 2,
+  Typing = 0,
 }
 /**
 */
-export enum MessageStatus {
-/**
-* If a message has not been sent.
-*/
-  NotSent = 0,
-/**
-* If a message has been sent, either directly or through a third party service
-*/
-  Sent = 1,
-/**
-* Confirmation of message being delivered. May be used in the future
-*/
-  Delivered = 2,
+export enum EmbedState {
+  Enabled = 0,
+  Disable = 1,
 }
 /**
 */
@@ -98,43 +72,29 @@ export enum MultiPassEventKindEnum {
 }
 /**
 */
-export enum Platform {
-  Desktop = 0,
-  Mobile = 1,
-  Web = 2,
-  Unknown = 3,
+export enum IdentityStatus {
+  Online = 0,
+  Away = 1,
+  Busy = 2,
+  Offline = 3,
 }
 /**
 */
-export enum MessageEvent {
+export enum MessageType {
 /**
-* Event that represents typing
+* Regular message sent or received
 */
-  Typing = 0,
-}
+  Message = 0,
 /**
+* Attachment; Can represent a file, image, etc., which can be from
+* constellation or sent directly
 */
-export enum TesseractEvent {
-  Unlocked = 0,
-  Locked = 1,
-}
+  Attachment = 1,
 /**
+* Event sent as a message.
+* TBD
 */
-export enum ReactionState {
-  Add = 0,
-  Remove = 1,
-}
-/**
-*/
-export enum PinState {
-  Pin = 0,
-  Unpin = 1,
-}
-/**
-*/
-export enum EmbedState {
-  Enabled = 0,
-  Disable = 1,
+  Event = 2,
 }
 /**
 */
@@ -153,10 +113,50 @@ export enum IdentityUpdate {
 }
 /**
 */
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
+export enum Platform {
+  Desktop = 0,
+  Mobile = 1,
+  Web = 2,
+  Unknown = 3,
+}
+/**
+*/
+export enum TesseractEvent {
+  Unlocked = 0,
+  Locked = 1,
+}
+/**
+*/
+export enum PinState {
+  Pin = 0,
+  Unpin = 1,
+}
+/**
+*/
+export enum MessageStatus {
+/**
+* If a message has not been sent.
+*/
+  NotSent = 0,
+/**
+* If a message has been sent, either directly or through a third party service
+*/
+  Sent = 1,
+/**
+* Confirmation of message being delivered. May be used in the future
+*/
+  Delivered = 2,
+}
+/**
+* The type that `Item` represents
+*/
+export enum ItemType {
+  FileItem = 0,
+  DirectoryItem = 1,
+/**
+* Would be invalid or undetermined
+*/
+  InvalidItem = 2,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
@@ -732,6 +732,10 @@ export class Identity {
 * @returns {Date}
 */
   modified(): Date;
+/**
+* @returns {any}
+*/
+  metadata(): any;
 }
 /**
 */
@@ -1552,7 +1556,7 @@ export class Tesseract {
 */
   disable_key_check(): void;
 /**
-* Enable the key check to allow any passphrase to be used when unlocking the datastore
+* Enable the key check to disallow any passphrase to be used when unlocking the datastore
 *
 * # Example
 *
@@ -1715,179 +1719,7 @@ export interface InitOutput {
   readonly config_minimal_testing: () => number;
   readonly config_minimal_basic: () => number;
   readonly config_minimal_with_relay: (a: number, b: number) => number;
-  readonly __wbg_tesseract_free: (a: number) => void;
-  readonly tesseract_new: () => number;
-  readonly tesseract_set_autosave: (a: number) => void;
-  readonly tesseract_autosave_enabled: (a: number) => number;
-  readonly tesseract_disable_key_check: (a: number) => void;
-  readonly tesseract_enable_key_check: (a: number) => void;
-  readonly tesseract_is_key_check_enabled: (a: number) => number;
-  readonly tesseract_exist: (a: number, b: number, c: number) => number;
-  readonly tesseract_clear: (a: number) => void;
-  readonly tesseract_is_unlock: (a: number) => number;
-  readonly tesseract_lock: (a: number) => void;
-  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_save: (a: number, b: number) => void;
-  readonly tesseract_subscribe: (a: number) => number;
-  readonly tesseract_load_from_storage: (a: number, b: number) => void;
-  readonly __wbg_asynciterator_free: (a: number) => void;
-  readonly asynciterator_next: (a: number) => number;
-  readonly __wbg_promiseresult_free: (a: number) => void;
-  readonly __wbg_get_promiseresult_done: (a: number) => number;
-  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
-  readonly promiseresult_new: (a: number) => number;
-  readonly promiseresult_value: (a: number) => number;
   readonly generate_name: (a: number) => void;
-  readonly __wbg_groupsettings_free: (a: number) => void;
-  readonly groupsettings_members_can_add_participants: (a: number) => number;
-  readonly groupsettings_members_can_change_name: (a: number) => number;
-  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
-  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
-  readonly __wbg_multipassbox_free: (a: number) => void;
-  readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly multipassbox_get_identity: (a: number, b: number, c: number) => number;
-  readonly multipassbox_identity: (a: number) => number;
-  readonly multipassbox_tesseract: (a: number) => number;
-  readonly multipassbox_update_identity: (a: number, b: number, c: number) => number;
-  readonly multipassbox_multipass_subscribe: (a: number) => number;
-  readonly multipassbox_send_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_accept_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_deny_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_close_request: (a: number, b: number, c: number) => number;
-  readonly multipassbox_received_friend_request_from: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_incoming_request: (a: number) => number;
-  readonly multipassbox_sent_friend_request_to: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_outgoing_request: (a: number) => number;
-  readonly multipassbox_remove_friend: (a: number, b: number, c: number) => number;
-  readonly multipassbox_block: (a: number, b: number, c: number) => number;
-  readonly multipassbox_unblock: (a: number, b: number, c: number) => number;
-  readonly multipassbox_block_list: (a: number) => number;
-  readonly multipassbox_is_blocked: (a: number, b: number, c: number) => number;
-  readonly multipassbox_list_friends: (a: number) => number;
-  readonly multipassbox_has_friend: (a: number, b: number, c: number) => number;
-  readonly multipassbox_identity_picture: (a: number, b: number, c: number) => number;
-  readonly multipassbox_identity_banner: (a: number, b: number, c: number) => number;
-  readonly multipassbox_identity_status: (a: number, b: number, c: number) => number;
-  readonly multipassbox_set_identity_status: (a: number, b: number) => number;
-  readonly multipassbox_identity_relationship: (a: number, b: number, c: number) => number;
-  readonly multipassbox_identity_platform: (a: number, b: number, c: number) => number;
-  readonly __wbg_multipasseventkind_free: (a: number) => void;
-  readonly multipasseventkind_kind: (a: number) => number;
-  readonly multipasseventkind_did: (a: number, b: number) => void;
-  readonly identityimage_data: (a: number, b: number) => void;
-  readonly identityimage_image_type: (a: number) => number;
-  readonly __wbg_directconversationsettings_free: (a: number) => void;
-  readonly __wbg_raygunbox_free: (a: number) => void;
-  readonly raygunbox_create_conversation: (a: number, b: number, c: number) => number;
-  readonly raygunbox_create_group_conversation: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly raygunbox_get_conversation: (a: number, b: number, c: number) => number;
-  readonly raygunbox_set_favorite_conversation: (a: number, b: number, c: number, d: number) => number;
-  readonly raygunbox_list_conversations: (a: number) => number;
-  readonly raygunbox_get_message: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_get_message_count: (a: number, b: number, c: number) => number;
-  readonly raygunbox_message_status: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_get_message_references: (a: number, b: number, c: number, d: number) => number;
-  readonly raygunbox_get_message_reference: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_get_messages: (a: number, b: number, c: number, d: number) => number;
-  readonly raygunbox_send: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_edit: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-  readonly raygunbox_delete: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_react: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-  readonly raygunbox_pin: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly raygunbox_reply: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-  readonly raygunbox_embeds: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly raygunbox_update_conversation_settings: (a: number, b: number, c: number, d: number) => number;
-  readonly raygunbox_update_conversation_name: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_add_recipient: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_remove_recipient: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly raygunbox_attach: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
-  readonly raygunbox_download_stream: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-  readonly raygunbox_get_conversation_stream: (a: number, b: number, c: number) => number;
-  readonly raygunbox_raygun_subscribe: (a: number) => number;
-  readonly raygunbox_send_event: (a: number, b: number, c: number, d: number) => number;
-  readonly raygunbox_cancel_event: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbg_conversation_free: (a: number) => void;
-  readonly conversation_id: (a: number, b: number) => void;
-  readonly conversation_name: (a: number, b: number) => void;
-  readonly conversation_creator: (a: number, b: number) => void;
-  readonly conversation_created: (a: number) => number;
-  readonly conversation_modified: (a: number) => number;
-  readonly conversation_settings: (a: number) => number;
-  readonly conversation_recipients: (a: number, b: number) => void;
-  readonly __wbg_messages_free: (a: number) => void;
-  readonly messages_variant: (a: number) => number;
-  readonly messages_value: (a: number) => number;
-  readonly __wbg_messageoptions_free: (a: number) => void;
-  readonly messageoptions_new: () => number;
-  readonly messageoptions_set_date_range: (a: number, b: number) => void;
-  readonly messageoptions_set_range: (a: number, b: number) => void;
-  readonly messageoptions_set_limit: (a: number, b: number) => void;
-  readonly messageoptions_set_skip: (a: number, b: number) => void;
-  readonly messageoptions_set_keyword: (a: number, b: number, c: number) => void;
-  readonly messageoptions_set_first_message: (a: number) => void;
-  readonly messageoptions_set_last_message: (a: number) => void;
-  readonly messageoptions_set_pinned: (a: number) => void;
-  readonly messageoptions_set_reverse: (a: number) => void;
-  readonly messageoptions_set_messages_type: (a: number, b: number) => void;
-  readonly __wbg_messagereference_free: (a: number) => void;
-  readonly messagereference_id: (a: number, b: number) => void;
-  readonly messagereference_conversation_id: (a: number, b: number) => void;
-  readonly messagereference_sender: (a: number, b: number) => void;
-  readonly messagereference_date: (a: number) => number;
-  readonly messagereference_modified: (a: number) => number;
-  readonly messagereference_pinned: (a: number) => number;
-  readonly messagereference_replied: (a: number, b: number) => void;
-  readonly messagereference_deleted: (a: number) => number;
-  readonly __wbg_message_free: (a: number) => void;
-  readonly message_id: (a: number, b: number) => void;
-  readonly message_message_type: (a: number) => number;
-  readonly message_conversation_id: (a: number, b: number) => void;
-  readonly message_sender: (a: number, b: number) => void;
-  readonly message_date: (a: number) => number;
-  readonly message_modified: (a: number) => number;
-  readonly message_pinned: (a: number) => number;
-  readonly message_reactions: (a: number) => number;
-  readonly message_mentions: (a: number, b: number) => void;
-  readonly message_lines: (a: number, b: number) => void;
-  readonly message_attachments: (a: number) => number;
-  readonly message_metadata: (a: number) => number;
-  readonly message_replied: (a: number, b: number) => void;
-  readonly __wbg_attachmentfile_free: (a: number) => void;
-  readonly attachmentfile_new: (a: number, b: number, c: number) => number;
-  readonly __wbg_attachmentstream_free: (a: number) => void;
-  readonly attachmentstream_new: (a: number, b: number, c: number) => number;
-  readonly __wbg_attachmentresult_free: (a: number) => void;
-  readonly attachmentresult_get_message_id: (a: number, b: number) => void;
-  readonly attachmentresult_next: (a: number) => number;
-  readonly __wbg_identityprofile_free: (a: number) => void;
-  readonly identityprofile_new: (a: number, b: number, c: number) => number;
-  readonly identityprofile_identity: (a: number) => number;
-  readonly identityprofile_set_identity: (a: number, b: number) => void;
-  readonly identityprofile_passphrase: (a: number, b: number) => void;
-  readonly __wbg_identityimage_free: (a: number) => void;
-  readonly __wbg_relationship_free: (a: number) => void;
-  readonly relationship_friends: (a: number) => number;
-  readonly relationship_received_friend_request: (a: number) => number;
-  readonly relationship_sent_friend_request: (a: number) => number;
-  readonly relationship_blocked: (a: number) => number;
-  readonly relationship_blocked_by: (a: number) => number;
-  readonly __wbg_identity_free: (a: number) => void;
-  readonly identity_set_username: (a: number, b: number, c: number) => void;
-  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
-  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
-  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
-  readonly identity_set_created: (a: number, b: number) => void;
-  readonly identity_set_modified: (a: number, b: number) => void;
-  readonly identity_username: (a: number, b: number) => void;
-  readonly identity_status_message: (a: number, b: number) => void;
-  readonly identity_short_id: (a: number, b: number) => void;
-  readonly identity_did_key: (a: number, b: number) => void;
-  readonly identity_created: (a: number) => number;
-  readonly identity_modified: (a: number) => number;
   readonly __wbg_hash_free: (a: number) => void;
   readonly __wbg_warpinstance_free: (a: number) => void;
   readonly warpinstance_multipass: (a: number) => number;
@@ -2009,6 +1841,179 @@ export interface InitOutput {
   readonly file_creation: (a: number) => number;
   readonly file_thumbnail_reference: (a: number, b: number) => void;
   readonly item_item_type: (a: number) => number;
+  readonly __wbg_raygunbox_free: (a: number) => void;
+  readonly raygunbox_create_conversation: (a: number, b: number, c: number) => number;
+  readonly raygunbox_create_group_conversation: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly raygunbox_get_conversation: (a: number, b: number, c: number) => number;
+  readonly raygunbox_set_favorite_conversation: (a: number, b: number, c: number, d: number) => number;
+  readonly raygunbox_list_conversations: (a: number) => number;
+  readonly raygunbox_get_message: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_get_message_count: (a: number, b: number, c: number) => number;
+  readonly raygunbox_message_status: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_get_message_references: (a: number, b: number, c: number, d: number) => number;
+  readonly raygunbox_get_message_reference: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_get_messages: (a: number, b: number, c: number, d: number) => number;
+  readonly raygunbox_send: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_edit: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly raygunbox_delete: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_react: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+  readonly raygunbox_pin: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly raygunbox_reply: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly raygunbox_embeds: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly raygunbox_update_conversation_settings: (a: number, b: number, c: number, d: number) => number;
+  readonly raygunbox_update_conversation_name: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_add_recipient: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_remove_recipient: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly raygunbox_attach: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+  readonly raygunbox_download_stream: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly raygunbox_get_conversation_stream: (a: number, b: number, c: number) => number;
+  readonly raygunbox_raygun_subscribe: (a: number) => number;
+  readonly raygunbox_send_event: (a: number, b: number, c: number, d: number) => number;
+  readonly raygunbox_cancel_event: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbg_conversation_free: (a: number) => void;
+  readonly conversation_id: (a: number, b: number) => void;
+  readonly conversation_name: (a: number, b: number) => void;
+  readonly conversation_creator: (a: number, b: number) => void;
+  readonly conversation_created: (a: number) => number;
+  readonly conversation_modified: (a: number) => number;
+  readonly conversation_settings: (a: number) => number;
+  readonly conversation_recipients: (a: number, b: number) => void;
+  readonly __wbg_messages_free: (a: number) => void;
+  readonly messages_variant: (a: number) => number;
+  readonly messages_value: (a: number) => number;
+  readonly __wbg_messageoptions_free: (a: number) => void;
+  readonly messageoptions_new: () => number;
+  readonly messageoptions_set_date_range: (a: number, b: number) => void;
+  readonly messageoptions_set_range: (a: number, b: number) => void;
+  readonly messageoptions_set_limit: (a: number, b: number) => void;
+  readonly messageoptions_set_skip: (a: number, b: number) => void;
+  readonly messageoptions_set_keyword: (a: number, b: number, c: number) => void;
+  readonly messageoptions_set_first_message: (a: number) => void;
+  readonly messageoptions_set_last_message: (a: number) => void;
+  readonly messageoptions_set_pinned: (a: number) => void;
+  readonly messageoptions_set_reverse: (a: number) => void;
+  readonly messageoptions_set_messages_type: (a: number, b: number) => void;
+  readonly __wbg_messagereference_free: (a: number) => void;
+  readonly messagereference_id: (a: number, b: number) => void;
+  readonly messagereference_conversation_id: (a: number, b: number) => void;
+  readonly messagereference_sender: (a: number, b: number) => void;
+  readonly messagereference_date: (a: number) => number;
+  readonly messagereference_modified: (a: number) => number;
+  readonly messagereference_pinned: (a: number) => number;
+  readonly messagereference_replied: (a: number, b: number) => void;
+  readonly messagereference_deleted: (a: number) => number;
+  readonly __wbg_message_free: (a: number) => void;
+  readonly message_id: (a: number, b: number) => void;
+  readonly message_message_type: (a: number) => number;
+  readonly message_conversation_id: (a: number, b: number) => void;
+  readonly message_sender: (a: number, b: number) => void;
+  readonly message_date: (a: number) => number;
+  readonly message_modified: (a: number) => number;
+  readonly message_pinned: (a: number) => number;
+  readonly message_reactions: (a: number) => number;
+  readonly message_mentions: (a: number, b: number) => void;
+  readonly message_lines: (a: number, b: number) => void;
+  readonly message_attachments: (a: number) => number;
+  readonly message_metadata: (a: number) => number;
+  readonly message_replied: (a: number, b: number) => void;
+  readonly __wbg_attachmentfile_free: (a: number) => void;
+  readonly attachmentfile_new: (a: number, b: number, c: number) => number;
+  readonly __wbg_attachmentstream_free: (a: number) => void;
+  readonly attachmentstream_new: (a: number, b: number, c: number) => number;
+  readonly __wbg_attachmentresult_free: (a: number) => void;
+  readonly attachmentresult_get_message_id: (a: number, b: number) => void;
+  readonly attachmentresult_next: (a: number) => number;
+  readonly __wbg_groupsettings_free: (a: number) => void;
+  readonly groupsettings_members_can_add_participants: (a: number) => number;
+  readonly groupsettings_members_can_change_name: (a: number) => number;
+  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
+  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
+  readonly __wbg_multipassbox_free: (a: number) => void;
+  readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly multipassbox_get_identity: (a: number, b: number, c: number) => number;
+  readonly multipassbox_identity: (a: number) => number;
+  readonly multipassbox_tesseract: (a: number) => number;
+  readonly multipassbox_update_identity: (a: number, b: number, c: number) => number;
+  readonly multipassbox_multipass_subscribe: (a: number) => number;
+  readonly multipassbox_send_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_accept_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_deny_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_close_request: (a: number, b: number, c: number) => number;
+  readonly multipassbox_received_friend_request_from: (a: number, b: number, c: number) => number;
+  readonly multipassbox_list_incoming_request: (a: number) => number;
+  readonly multipassbox_sent_friend_request_to: (a: number, b: number, c: number) => number;
+  readonly multipassbox_list_outgoing_request: (a: number) => number;
+  readonly multipassbox_remove_friend: (a: number, b: number, c: number) => number;
+  readonly multipassbox_block: (a: number, b: number, c: number) => number;
+  readonly multipassbox_unblock: (a: number, b: number, c: number) => number;
+  readonly multipassbox_block_list: (a: number) => number;
+  readonly multipassbox_is_blocked: (a: number, b: number, c: number) => number;
+  readonly multipassbox_list_friends: (a: number) => number;
+  readonly multipassbox_has_friend: (a: number, b: number, c: number) => number;
+  readonly multipassbox_identity_picture: (a: number, b: number, c: number) => number;
+  readonly multipassbox_identity_banner: (a: number, b: number, c: number) => number;
+  readonly multipassbox_identity_status: (a: number, b: number, c: number) => number;
+  readonly multipassbox_set_identity_status: (a: number, b: number) => number;
+  readonly multipassbox_identity_relationship: (a: number, b: number, c: number) => number;
+  readonly multipassbox_identity_platform: (a: number, b: number, c: number) => number;
+  readonly __wbg_multipasseventkind_free: (a: number) => void;
+  readonly multipasseventkind_kind: (a: number) => number;
+  readonly multipasseventkind_did: (a: number, b: number) => void;
+  readonly identityimage_data: (a: number, b: number) => void;
+  readonly identityimage_image_type: (a: number) => number;
+  readonly __wbg_directconversationsettings_free: (a: number) => void;
+  readonly __wbg_identityprofile_free: (a: number) => void;
+  readonly identityprofile_new: (a: number, b: number, c: number) => number;
+  readonly identityprofile_identity: (a: number) => number;
+  readonly identityprofile_set_identity: (a: number, b: number) => void;
+  readonly identityprofile_passphrase: (a: number, b: number) => void;
+  readonly __wbg_identityimage_free: (a: number) => void;
+  readonly __wbg_relationship_free: (a: number) => void;
+  readonly relationship_friends: (a: number) => number;
+  readonly relationship_received_friend_request: (a: number) => number;
+  readonly relationship_sent_friend_request: (a: number) => number;
+  readonly relationship_blocked: (a: number) => number;
+  readonly relationship_blocked_by: (a: number) => number;
+  readonly __wbg_identity_free: (a: number) => void;
+  readonly identity_set_username: (a: number, b: number, c: number) => void;
+  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
+  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
+  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
+  readonly identity_set_created: (a: number, b: number) => void;
+  readonly identity_set_modified: (a: number, b: number) => void;
+  readonly identity_username: (a: number, b: number) => void;
+  readonly identity_status_message: (a: number, b: number) => void;
+  readonly identity_short_id: (a: number, b: number) => void;
+  readonly identity_did_key: (a: number, b: number) => void;
+  readonly identity_created: (a: number) => number;
+  readonly identity_modified: (a: number) => number;
+  readonly identity_metadata: (a: number) => number;
+  readonly __wbg_tesseract_free: (a: number) => void;
+  readonly tesseract_new: () => number;
+  readonly tesseract_set_autosave: (a: number) => void;
+  readonly tesseract_autosave_enabled: (a: number) => number;
+  readonly tesseract_disable_key_check: (a: number) => void;
+  readonly tesseract_enable_key_check: (a: number) => void;
+  readonly tesseract_is_key_check_enabled: (a: number) => number;
+  readonly tesseract_exist: (a: number, b: number, c: number) => number;
+  readonly tesseract_clear: (a: number) => void;
+  readonly tesseract_is_unlock: (a: number) => number;
+  readonly tesseract_lock: (a: number) => void;
+  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_save: (a: number, b: number) => void;
+  readonly tesseract_subscribe: (a: number) => number;
+  readonly tesseract_load_from_storage: (a: number, b: number) => void;
+  readonly __wbg_asynciterator_free: (a: number) => void;
+  readonly asynciterator_next: (a: number) => number;
+  readonly __wbg_promiseresult_free: (a: number) => void;
+  readonly __wbg_get_promiseresult_done: (a: number) => number;
+  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
+  readonly promiseresult_new: (a: number) => number;
+  readonly promiseresult_value: (a: number) => number;
   readonly __wbg_intounderlyingsource_free: (a: number) => void;
   readonly intounderlyingsource_pull: (a: number, b: number) => number;
   readonly intounderlyingsource_cancel: (a: number) => void;
@@ -2026,7 +2031,7 @@ export interface InitOutput {
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
   readonly wasm_bindgen__convert__closures__invoke1_mut__hadcd974251a5a328: (a: number, b: number, c: number) => void;
-  readonly wasm_bindgen__convert__closures__invoke1_mut__hb5ed5caa2bf8b493: (a: number, b: number, c: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke1_mut__hb0e6598384863658: (a: number, b: number, c: number) => void;
   readonly wasm_bindgen__convert__closures__invoke0_mut__he120708a7692d5b4: (a: number, b: number) => void;
   readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hc247867d81b11828: (a: number, b: number, c: number) => void;
   readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h118d4adb4212811b: (a: number, b: number, c: number) => void;
