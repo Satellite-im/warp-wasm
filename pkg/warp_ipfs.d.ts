@@ -24,65 +24,6 @@ export function message_from(js: any): Message;
 export function initialize(): void;
 /**
 */
-export enum PinState {
-  Pin = 0,
-  Unpin = 1,
-}
-/**
-*/
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
-}
-/**
-*/
-export enum MessageEvent {
-/**
-* Event that represents typing
-*/
-  Typing = 0,
-}
-/**
-*/
-export enum IdentityStatus {
-  Online = 0,
-  Away = 1,
-  Busy = 2,
-  Offline = 3,
-}
-/**
-*/
-export enum MessagesEnum {
-  List = 0,
-  Stream = 1,
-  Page = 2,
-}
-/**
-* The type that `Item` represents
-*/
-export enum ItemType {
-  FileItem = 0,
-  DirectoryItem = 1,
-/**
-* Would be invalid or undetermined
-*/
-  InvalidItem = 2,
-}
-/**
-*/
-export enum EmbedState {
-  Enabled = 0,
-  Disable = 1,
-}
-/**
-*/
-export enum TesseractEvent {
-  Unlocked = 0,
-  Locked = 1,
-}
-/**
-*/
 export enum Platform {
   Desktop = 0,
   Mobile = 1,
@@ -91,39 +32,9 @@ export enum Platform {
 }
 /**
 */
-export enum MultiPassEventKindEnum {
-  FriendRequestReceived = 0,
-  FriendRequestSent = 1,
-  IncomingFriendRequestRejected = 2,
-  OutgoingFriendRequestRejected = 3,
-  IncomingFriendRequestClosed = 4,
-  OutgoingFriendRequestClosed = 5,
-  FriendAdded = 6,
-  FriendRemoved = 7,
-  IdentityOnline = 8,
-  IdentityOffline = 9,
-  IdentityUpdate = 10,
-  Blocked = 11,
-  BlockedBy = 12,
-  Unblocked = 13,
-  UnblockedBy = 14,
-}
-/**
-*/
-export enum IdentityUpdate {
-  Username = 0,
-  Picture = 1,
-  PicturePath = 2,
-  PictureStream = 3,
-  ClearPicture = 4,
-  Banner = 5,
-  BannerPath = 6,
-  BannerStream = 7,
-  ClearBanner = 8,
-  StatusMessage = 9,
-  ClearStatusMessage = 10,
-  AddMetadataKey = 11,
-  RemoveMetadataKey = 12,
+export enum EmbedState {
+  Enabled = 0,
+  Disable = 1,
 }
 /**
 */
@@ -145,6 +56,19 @@ export enum MessageType {
 }
 /**
 */
+export enum ReactionState {
+  Add = 0,
+  Remove = 1,
+}
+/**
+*/
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
+}
+/**
+*/
 export enum MessageStatus {
 /**
 * If a message has not been sent.
@@ -161,9 +85,85 @@ export enum MessageStatus {
 }
 /**
 */
-export enum ReactionState {
-  Add = 0,
-  Remove = 1,
+export enum MultiPassEventKindEnum {
+  FriendRequestReceived = 0,
+  FriendRequestSent = 1,
+  IncomingFriendRequestRejected = 2,
+  OutgoingFriendRequestRejected = 3,
+  IncomingFriendRequestClosed = 4,
+  OutgoingFriendRequestClosed = 5,
+  FriendAdded = 6,
+  FriendRemoved = 7,
+  IdentityOnline = 8,
+  IdentityOffline = 9,
+  IdentityUpdate = 10,
+  Blocked = 11,
+  BlockedBy = 12,
+  Unblocked = 13,
+  UnblockedBy = 14,
+}
+/**
+* The type that `Item` represents
+*/
+export enum ItemType {
+  FileItem = 0,
+  DirectoryItem = 1,
+/**
+* Would be invalid or undetermined
+*/
+  InvalidItem = 2,
+}
+/**
+*/
+export enum MessageEvent {
+/**
+* Event that represents typing
+*/
+  Typing = 0,
+}
+/**
+*/
+export enum IdentityUpdate {
+  Username = 0,
+  Picture = 1,
+  PicturePath = 2,
+  PictureStream = 3,
+  ClearPicture = 4,
+  Banner = 5,
+  BannerPath = 6,
+  BannerStream = 7,
+  ClearBanner = 8,
+  StatusMessage = 9,
+  ClearStatusMessage = 10,
+  AddMetadataKey = 11,
+  RemoveMetadataKey = 12,
+}
+/**
+*/
+export enum TesseractEvent {
+  Unlocked = 0,
+  Locked = 1,
+}
+/**
+*/
+export enum MessagesEnum {
+  List = 0,
+  Stream = 1,
+  Page = 2,
+}
+/**
+*/
+export enum PinState {
+  Pin = 0,
+  Unpin = 1,
+}
+/**
+*/
+export enum IdentityStatus {
+  Online = 0,
+  Away = 1,
+  Busy = 2,
+  Offline = 3,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
@@ -212,6 +212,39 @@ export class AttachmentStream {
 */
 export class Config {
   free(): void;
+/**
+* @param {string} path
+*/
+  with_path(path: string): void;
+/**
+* @param {boolean} persist
+*/
+  set_persistence(persist: boolean): void;
+/**
+* @param {boolean} enable
+*/
+  set_relay_enabled(enable: boolean): void;
+/**
+* @param {boolean} save
+*/
+  set_save_phrase(save: boolean): void;
+/**
+* @param {number | undefined} [size]
+*/
+  set_max_storage_size(size?: number): void;
+/**
+* @param {number | undefined} [size]
+*/
+  set_max_file_size(size?: number): void;
+/**
+* @param {number} size_x
+* @param {number} size_y
+*/
+  set_thumbnail_size(size_x: number, size_y: number): void;
+/**
+* @param {boolean} exact
+*/
+  with_thumbnail_exact_format(exact: boolean): void;
 /**
 * Default configuration for local development and writing test
 * @returns {Config}
@@ -1001,9 +1034,9 @@ export class Message {
 */
   lines(): (string)[];
 /**
-* @returns {any}
+* @returns {any[]}
 */
-  attachments(): any;
+  attachments(): any[];
 /**
 * @returns {any}
 */
@@ -1730,11 +1763,26 @@ export interface InitOutput {
   readonly __wbg_warpipfs_free: (a: number) => void;
   readonly warpipfs_new_wasm: (a: number, b: number) => number;
   readonly __wbg_config_free: (a: number) => void;
+  readonly config_with_path: (a: number, b: number, c: number) => void;
+  readonly config_set_persistence: (a: number, b: number) => void;
+  readonly config_set_relay_enabled: (a: number, b: number) => void;
+  readonly config_set_save_phrase: (a: number, b: number) => void;
+  readonly config_set_max_storage_size: (a: number, b: number, c: number) => void;
+  readonly config_set_max_file_size: (a: number, b: number, c: number) => void;
+  readonly config_set_thumbnail_size: (a: number, b: number, c: number) => void;
+  readonly config_with_thumbnail_exact_format: (a: number, b: number) => void;
   readonly config_development: () => number;
   readonly config_testing: () => number;
   readonly config_minimal_testing: () => number;
   readonly config_minimal_basic: () => number;
   readonly config_minimal_with_relay: (a: number, b: number) => number;
+  readonly __wbg_groupsettings_free: (a: number) => void;
+  readonly groupsettings_members_can_add_participants: (a: number) => number;
+  readonly groupsettings_members_can_change_name: (a: number) => number;
+  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
+  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
+  readonly __wbg_directconversationsettings_free: (a: number) => void;
+  readonly generate_name: (a: number) => void;
   readonly __wbg_hash_free: (a: number) => void;
   readonly __wbg_multipassbox_free: (a: number) => void;
   readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
@@ -1769,7 +1817,6 @@ export interface InitOutput {
   readonly multipasseventkind_did: (a: number, b: number) => void;
   readonly identityimage_data: (a: number, b: number) => void;
   readonly identityimage_image_type: (a: number) => number;
-  readonly generate_name: (a: number) => void;
   readonly __wbg_constellationbox_free: (a: number) => void;
   readonly constellationbox_modified: (a: number) => number;
   readonly constellationbox_root_directory: (a: number) => number;
@@ -1911,32 +1958,6 @@ export interface InitOutput {
   readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
   readonly promiseresult_new: (a: number) => number;
   readonly promiseresult_value: (a: number) => number;
-  readonly __wbg_identityprofile_free: (a: number) => void;
-  readonly identityprofile_new: (a: number, b: number, c: number) => number;
-  readonly identityprofile_identity: (a: number) => number;
-  readonly identityprofile_set_identity: (a: number, b: number) => void;
-  readonly identityprofile_passphrase: (a: number, b: number) => void;
-  readonly __wbg_identityimage_free: (a: number) => void;
-  readonly __wbg_relationship_free: (a: number) => void;
-  readonly relationship_friends: (a: number) => number;
-  readonly relationship_received_friend_request: (a: number) => number;
-  readonly relationship_sent_friend_request: (a: number) => number;
-  readonly relationship_blocked: (a: number) => number;
-  readonly relationship_blocked_by: (a: number) => number;
-  readonly __wbg_identity_free: (a: number) => void;
-  readonly identity_set_username: (a: number, b: number, c: number) => void;
-  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
-  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
-  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
-  readonly identity_set_created: (a: number, b: number) => void;
-  readonly identity_set_modified: (a: number, b: number) => void;
-  readonly identity_username: (a: number, b: number) => void;
-  readonly identity_status_message: (a: number, b: number) => void;
-  readonly identity_short_id: (a: number, b: number) => void;
-  readonly identity_did_key: (a: number, b: number) => void;
-  readonly identity_created: (a: number) => number;
-  readonly identity_modified: (a: number) => number;
-  readonly identity_metadata: (a: number) => number;
   readonly __wbg_raygunbox_free: (a: number) => void;
   readonly raygunbox_create_conversation: (a: number, b: number, c: number) => number;
   readonly raygunbox_create_group_conversation: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
@@ -2010,7 +2031,7 @@ export interface InitOutput {
   readonly message_reactions: (a: number) => number;
   readonly message_mentions: (a: number, b: number) => void;
   readonly message_lines: (a: number, b: number) => void;
-  readonly message_attachments: (a: number) => number;
+  readonly message_attachments: (a: number, b: number) => void;
   readonly message_metadata: (a: number) => number;
   readonly message_replied: (a: number, b: number) => void;
   readonly __wbg_attachmentfile_free: (a: number) => void;
@@ -2027,12 +2048,32 @@ export interface InitOutput {
   readonly messagereference_id: (a: number, b: number) => void;
   readonly initialize: () => void;
   readonly messagereference_conversation_id: (a: number, b: number) => void;
-  readonly __wbg_groupsettings_free: (a: number) => void;
-  readonly groupsettings_members_can_add_participants: (a: number) => number;
-  readonly groupsettings_members_can_change_name: (a: number) => number;
-  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
-  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
-  readonly __wbg_directconversationsettings_free: (a: number) => void;
+  readonly __wbg_identityprofile_free: (a: number) => void;
+  readonly identityprofile_new: (a: number, b: number, c: number) => number;
+  readonly identityprofile_identity: (a: number) => number;
+  readonly identityprofile_set_identity: (a: number, b: number) => void;
+  readonly identityprofile_passphrase: (a: number, b: number) => void;
+  readonly __wbg_identityimage_free: (a: number) => void;
+  readonly __wbg_relationship_free: (a: number) => void;
+  readonly relationship_friends: (a: number) => number;
+  readonly relationship_received_friend_request: (a: number) => number;
+  readonly relationship_sent_friend_request: (a: number) => number;
+  readonly relationship_blocked: (a: number) => number;
+  readonly relationship_blocked_by: (a: number) => number;
+  readonly __wbg_identity_free: (a: number) => void;
+  readonly identity_set_username: (a: number, b: number, c: number) => void;
+  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
+  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
+  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
+  readonly identity_set_created: (a: number, b: number) => void;
+  readonly identity_set_modified: (a: number, b: number) => void;
+  readonly identity_username: (a: number, b: number) => void;
+  readonly identity_status_message: (a: number, b: number) => void;
+  readonly identity_short_id: (a: number, b: number) => void;
+  readonly identity_did_key: (a: number, b: number) => void;
+  readonly identity_created: (a: number) => number;
+  readonly identity_modified: (a: number) => number;
+  readonly identity_metadata: (a: number) => number;
   readonly __wbg_intounderlyingsource_free: (a: number) => void;
   readonly intounderlyingsource_pull: (a: number, b: number) => number;
   readonly intounderlyingsource_cancel: (a: number) => void;
