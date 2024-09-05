@@ -4,13 +4,13 @@ use warp::{
     multipass::{
         self,
         identity::{
-            self, Identity, IdentityImage, IdentityProfile, IdentityStatus, Platform, Relationship,
+            self, Identity, IdentityProfile, IdentityStatus, Platform, Relationship,
         },
         MultiPass,
     },
     tesseract::Tesseract,
 };
-use crate::stream::AsyncIterator;
+use crate::warp::stream::AsyncIterator;
 use futures::StreamExt;
 use js_sys::{Array, Uint8Array};
 use std::str::FromStr;
@@ -63,8 +63,8 @@ impl MultiPassBox {
         self.inner.identity().await.map_err(|e| e.into())
     }
 
-    pub fn tesseract(&self) -> Tesseract {
-        self.inner.tesseract()
+    pub fn tesseract(&self) -> crate::warp::tesseract::Tesseract {
+        self.inner.tesseract().into()
     }
 
     pub async fn update_identity(
@@ -240,11 +240,12 @@ impl MultiPassBox {
     pub async fn identity_picture(
         &self,
         did: String,
-    ) -> Result<multipass::identity::IdentityImage, JsError> {
+    ) -> Result<IdentityImage, JsError> {
         self.inner
             .identity_picture(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
+            .map(|i |IdentityImage(i))
     }
 
     /// Profile banner belonging to the `Identity`
@@ -253,6 +254,7 @@ impl MultiPassBox {
             .identity_banner(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
+            .map(|i |IdentityImage(i))
     }
 
     /// Identity status to determine if they are online or offline
@@ -530,14 +532,15 @@ pub enum MultiPassEventKindEnum {
 }
 
 #[wasm_bindgen]
+pub struct IdentityImage(identity::IdentityImage);
+
+#[wasm_bindgen]
 impl IdentityImage {
-    #[wasm_bindgen(js_name = data)]
-    pub fn data_js(&self) -> Vec<u8> {
-        self.data().to_vec()
+    pub fn data(&self) -> Vec<u8> {
+        self.0.data().to_vec()
     }
 
-    #[wasm_bindgen(js_name = image_type)]
-    pub fn image_type_js(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.image_type()).unwrap()
+    pub fn image_type(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.0.image_type()).unwrap()
     }
 }

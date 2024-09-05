@@ -1,5 +1,5 @@
 use warp::constellation::{self, file::Hash, item::ItemType, Constellation};
-use crate::stream::{AsyncIterator, InnerStream};
+use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;

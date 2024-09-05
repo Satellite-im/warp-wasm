@@ -5,7 +5,7 @@ use warp::{
         PinState, RayGun, ReactionState,
     },
 };
-use crate::stream::{AsyncIterator, InnerStream};
+use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
 use js_sys::Promise;
 use serde::{Deserialize, Serialize};
