@@ -8,11 +8,11 @@ use raygun::RayGunBox;
 
 use wasm_bindgen::prelude::*;
 
-mod constellation;
-mod multipass;
-mod raygun;
-mod stream;
-mod tesseract;
+pub mod constellation;
+pub mod multipass;
+pub mod raygun;
+pub mod stream;
+pub mod tesseract;
 
 #[wasm_bindgen(start)]
 pub fn initialize() {

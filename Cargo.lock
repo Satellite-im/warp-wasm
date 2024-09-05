@@ -1487,7 +1487,7 @@ dependencies = [
 [[package]]
 name = "fs"
 version = "0.1.0"
-source = "git+https://github.com/Satellite-im/Warp.git?rev=f6185a70b2476487a17652755da6920c96c486a8#f6185a70b2476487a17652755da6920c96c486a8"
+source = "git+https://github.com/Satellite-im/Warp.git?rev=e1f550e4eaf637aeb2a92c9fda44e325beab1705#e1f550e4eaf637aeb2a92c9fda44e325beab1705"
 dependencies = [
  "gloo",
  "tokio",
@@ -5792,7 +5792,7 @@ dependencies = [
 [[package]]
 name = "warp"
 version = "0.1.0"
-source = "git+https://github.com/Satellite-im/Warp.git?rev=f6185a70b2476487a17652755da6920c96c486a8#f6185a70b2476487a17652755da6920c96c486a8"
+source = "git+https://github.com/Satellite-im/Warp.git?rev=e1f550e4eaf637aeb2a92c9fda44e325beab1705#e1f550e4eaf637aeb2a92c9fda44e325beab1705"
 dependencies = [
  "aes-gcm",
  "anyhow",
@@ -5843,7 +5843,7 @@ dependencies = [
 [[package]]
 name = "warp-ipfs"
 version = "0.1.0"
-source = "git+https://github.com/Satellite-im/Warp.git?rev=f6185a70b2476487a17652755da6920c96c486a8#f6185a70b2476487a17652755da6920c96c486a8"
+source = "git+https://github.com/Satellite-im/Warp.git?rev=e1f550e4eaf637aeb2a92c9fda44e325beab1705#e1f550e4eaf637aeb2a92c9fda44e325beab1705"
 dependencies = [
  "anyhow",
  "async-recursion",

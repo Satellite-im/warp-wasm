@@ -11,6 +11,12 @@ impl From<warp::tesseract::Tesseract> for Tesseract {
         Tesseract(value)
     }
 }
+impl From<Tesseract> for warp::tesseract::Tesseract {
+    fn from(value: Tesseract) -> Self {
+        value.0
+    }
+}
+
 #[wasm_bindgen]
 impl Tesseract {
     #[wasm_bindgen(constructor)]
