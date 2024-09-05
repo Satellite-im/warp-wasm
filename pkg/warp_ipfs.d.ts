@@ -1,17 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
-* @param {any} js
-* @returns {Message}
-*/
-export function message_from(js: any): Message;
-/**
-*/
-export function initialize(): void;
-/**
-*/
-export function trace(): void;
-/**
 * Used to generate a random user name
 *
 * # Example
@@ -26,6 +15,25 @@ export function trace(): void;
 */
 export function generate_name(): string;
 /**
+* @param {any} js
+* @returns {Message}
+*/
+export function message_from(js: any): Message;
+/**
+*/
+export function initialize(): void;
+/**
+*/
+export function trace(): void;
+/**
+*/
+export enum IdentityStatus {
+  Online = 0,
+  Away = 1,
+  Busy = 2,
+  Offline = 3,
+}
+/**
 */
 export enum TesseractEvent {
   Unlocked = 0,
@@ -33,26 +41,17 @@ export enum TesseractEvent {
 }
 /**
 */
-export enum ReactionState {
-  Add = 0,
-  Remove = 1,
+export enum MessageEvent {
+/**
+* Event that represents typing
+*/
+  Typing = 0,
 }
 /**
 */
-export enum IdentityUpdate {
-  Username = 0,
-  Picture = 1,
-  PicturePath = 2,
-  PictureStream = 3,
-  ClearPicture = 4,
-  Banner = 5,
-  BannerPath = 6,
-  BannerStream = 7,
-  ClearBanner = 8,
-  StatusMessage = 9,
-  ClearStatusMessage = 10,
-  AddMetadataKey = 11,
-  RemoveMetadataKey = 12,
+export enum EmbedState {
+  Enabled = 0,
+  Disable = 1,
 }
 /**
 */
@@ -63,25 +62,29 @@ export enum Identifier {
 }
 /**
 */
+export enum MessagesEnum {
+  List = 0,
+  Stream = 1,
+  Page = 2,
+}
+/**
+* The type that `Item` represents
+*/
+export enum ItemType {
+  FileItem = 0,
+  DirectoryItem = 1,
+/**
+* Would be invalid or undetermined
+*/
+  InvalidItem = 2,
+}
+/**
+*/
 export enum Platform {
   Desktop = 0,
   Mobile = 1,
   Web = 2,
   Unknown = 3,
-}
-/**
-*/
-export enum EmbedState {
-  Enabled = 0,
-  Disable = 1,
-}
-/**
-*/
-export enum MessageEvent {
-/**
-* Event that represents typing
-*/
-  Typing = 0,
 }
 /**
 */
@@ -119,28 +122,20 @@ export enum MessageStatus {
 }
 /**
 */
-export enum PinState {
-  Pin = 0,
-  Unpin = 1,
-}
-/**
-*/
-export enum IdentityStatus {
-  Online = 0,
-  Away = 1,
-  Busy = 2,
-  Offline = 3,
-}
-/**
-* The type that `Item` represents
-*/
-export enum ItemType {
-  FileItem = 0,
-  DirectoryItem = 1,
-/**
-* Would be invalid or undetermined
-*/
-  InvalidItem = 2,
+export enum IdentityUpdate {
+  Username = 0,
+  Picture = 1,
+  PicturePath = 2,
+  PictureStream = 3,
+  ClearPicture = 4,
+  Banner = 5,
+  BannerPath = 6,
+  BannerStream = 7,
+  ClearBanner = 8,
+  StatusMessage = 9,
+  ClearStatusMessage = 10,
+  AddMetadataKey = 11,
+  RemoveMetadataKey = 12,
 }
 /**
 */
@@ -163,10 +158,15 @@ export enum MultiPassEventKindEnum {
 }
 /**
 */
-export enum MessagesEnum {
-  List = 0,
-  Stream = 1,
-  Page = 2,
+export enum ReactionState {
+  Add = 0,
+  Remove = 1,
+}
+/**
+*/
+export enum PinState {
+  Pin = 0,
+  Unpin = 1,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
@@ -402,6 +402,11 @@ export class Conversation {
 * @returns {(string)[]}
 */
   recipients(): (string)[];
+}
+/**
+*/
+export class ConversationImage {
+  free(): void;
 }
 /**
 */
@@ -1782,6 +1787,183 @@ export interface InitOutput {
   readonly config_minimal_testing: () => number;
   readonly config_minimal_basic: () => number;
   readonly config_minimal_with_relay: (a: number, b: number) => number;
+  readonly __wbg_hash_free: (a: number) => void;
+  readonly __wbg_tesseract_free: (a: number) => void;
+  readonly tesseract_new: () => number;
+  readonly tesseract_set_autosave: (a: number) => void;
+  readonly tesseract_autosave_enabled: (a: number) => number;
+  readonly tesseract_disable_key_check: (a: number) => void;
+  readonly tesseract_enable_key_check: (a: number) => void;
+  readonly tesseract_is_key_check_enabled: (a: number) => number;
+  readonly tesseract_exist: (a: number, b: number, c: number) => number;
+  readonly tesseract_clear: (a: number) => void;
+  readonly tesseract_is_unlock: (a: number) => number;
+  readonly tesseract_lock: (a: number) => void;
+  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
+  readonly tesseract_save: (a: number, b: number) => void;
+  readonly tesseract_subscribe: (a: number) => number;
+  readonly tesseract_load_from_storage: (a: number, b: number) => void;
+  readonly __wbg_constellationbox_free: (a: number) => void;
+  readonly constellationbox_modified: (a: number) => number;
+  readonly constellationbox_root_directory: (a: number) => number;
+  readonly constellationbox_current_size: (a: number) => number;
+  readonly constellationbox_max_size: (a: number) => number;
+  readonly constellationbox_select: (a: number, b: number, c: number, d: number) => void;
+  readonly constellationbox_set_path: (a: number, b: number, c: number) => void;
+  readonly constellationbox_get_path: (a: number, b: number) => void;
+  readonly constellationbox_go_back: (a: number, b: number) => void;
+  readonly constellationbox_current_directory: (a: number, b: number) => void;
+  readonly constellationbox_open_directory: (a: number, b: number, c: number, d: number) => void;
+  readonly constellationbox_put_buffer: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly constellationbox_get_buffer: (a: number, b: number, c: number) => number;
+  readonly constellationbox_put_stream: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly constellationbox_get_stream: (a: number, b: number, c: number) => number;
+  readonly constellationbox_rename: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly constellationbox_remove: (a: number, b: number, c: number, d: number) => number;
+  readonly constellationbox_move_item: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly constellationbox_create_directory: (a: number, b: number, c: number, d: number) => number;
+  readonly constellationbox_sync_ref: (a: number, b: number, c: number) => number;
+  readonly __wbg_directory_free: (a: number) => void;
+  readonly directory_new: (a: number, b: number) => number;
+  readonly directory_has_item: (a: number, b: number, c: number) => number;
+  readonly directory_add_file: (a: number, b: number, c: number) => void;
+  readonly directory_add_directory: (a: number, b: number, c: number) => void;
+  readonly directory_get_item_index: (a: number, b: number, c: number, d: number) => void;
+  readonly directory_rename_item: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly directory_remove_item: (a: number, b: number, c: number, d: number) => void;
+  readonly directory_remove_item_from_path: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly directory_move_item_to: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly directory_get_items: (a: number, b: number) => void;
+  readonly directory_set_items: (a: number, b: number, c: number) => void;
+  readonly directory_add_item: (a: number, b: number, c: number) => void;
+  readonly directory_get_item: (a: number, b: number, c: number, d: number) => void;
+  readonly directory_find_item: (a: number, b: number, c: number, d: number) => void;
+  readonly directory_find_all_items: (a: number, b: number, c: number, d: number) => void;
+  readonly directory_get_last_directory_from_path: (a: number, b: number, c: number, d: number) => void;
+  readonly directory_get_item_by_path: (a: number, b: number, c: number, d: number) => void;
+  readonly directory_name: (a: number, b: number) => void;
+  readonly directory_set_name: (a: number, b: number, c: number) => void;
+  readonly directory_set_thumbnail_format: (a: number, b: number) => void;
+  readonly directory_thumbnail_format: (a: number) => number;
+  readonly directory_set_thumbnail: (a: number, b: number, c: number) => void;
+  readonly directory_thumbnail: (a: number, b: number) => void;
+  readonly directory_set_thumbnail_reference: (a: number, b: number, c: number) => void;
+  readonly directory_thumbnail_reference: (a: number, b: number) => void;
+  readonly directory_set_favorite: (a: number, b: number) => void;
+  readonly directory_favorite: (a: number) => number;
+  readonly directory_description: (a: number, b: number) => void;
+  readonly directory_set_description: (a: number, b: number, c: number) => void;
+  readonly directory_size: (a: number) => number;
+  readonly directory_set_creation: (a: number, b: number) => void;
+  readonly directory_set_modified: (a: number, b: number) => void;
+  readonly directory_path: (a: number, b: number) => void;
+  readonly directory_set_path: (a: number, b: number, c: number) => void;
+  readonly directory_id: (a: number, b: number) => void;
+  readonly directory_creation: (a: number) => number;
+  readonly directory_modified: (a: number) => number;
+  readonly __wbg_file_free: (a: number) => void;
+  readonly file_new: (a: number, b: number) => number;
+  readonly file_set_id: (a: number, b: number, c: number) => void;
+  readonly file_set_name: (a: number, b: number, c: number) => void;
+  readonly file_description: (a: number, b: number) => void;
+  readonly file_set_description: (a: number, b: number, c: number) => void;
+  readonly file_set_thumbnail_format: (a: number, b: number) => void;
+  readonly file_thumbnail_format: (a: number) => number;
+  readonly file_set_thumbnail: (a: number, b: number, c: number) => void;
+  readonly file_set_favorite: (a: number, b: number) => void;
+  readonly file_set_reference: (a: number, b: number, c: number) => void;
+  readonly file_set_thumbnail_reference: (a: number, b: number, c: number) => void;
+  readonly file_reference: (a: number, b: number) => void;
+  readonly file_size: (a: number) => number;
+  readonly file_set_size: (a: number, b: number) => void;
+  readonly file_set_creation: (a: number, b: number) => void;
+  readonly file_set_modified: (a: number, b: number) => void;
+  readonly file_hash: (a: number) => number;
+  readonly file_set_hash: (a: number, b: number) => void;
+  readonly file_set_file_type: (a: number, b: number) => void;
+  readonly file_file_type: (a: number) => number;
+  readonly file_path: (a: number, b: number) => void;
+  readonly file_set_path: (a: number, b: number, c: number) => void;
+  readonly file_id: (a: number, b: number) => void;
+  readonly file_modified: (a: number) => number;
+  readonly __wbg_item_free: (a: number) => void;
+  readonly item_new_file: (a: number) => number;
+  readonly item_new_directory: (a: number) => number;
+  readonly item_file: (a: number) => number;
+  readonly item_directory: (a: number) => number;
+  readonly item_id: (a: number, b: number) => void;
+  readonly item_creation: (a: number) => number;
+  readonly item_modified: (a: number) => number;
+  readonly item_name: (a: number, b: number) => void;
+  readonly item_description: (a: number, b: number) => void;
+  readonly item_size: (a: number) => number;
+  readonly item_thumbnail_format: (a: number) => number;
+  readonly item_thumbnail: (a: number, b: number) => void;
+  readonly item_favorite: (a: number) => number;
+  readonly item_set_favorite: (a: number, b: number) => void;
+  readonly item_rename: (a: number, b: number, c: number, d: number) => void;
+  readonly item_is_directory: (a: number) => number;
+  readonly item_is_file: (a: number) => number;
+  readonly item_set_description: (a: number, b: number, c: number) => void;
+  readonly item_set_thumbnail: (a: number, b: number, c: number) => void;
+  readonly item_set_thumbnail_format: (a: number, b: number) => void;
+  readonly item_set_size: (a: number, b: number, c: number) => void;
+  readonly item_path: (a: number, b: number) => void;
+  readonly item_set_path: (a: number, b: number, c: number) => void;
+  readonly item_get_directory: (a: number, b: number) => void;
+  readonly item_get_file: (a: number, b: number) => void;
+  readonly file_thumbnail: (a: number, b: number) => void;
+  readonly file_thumbnail_reference: (a: number, b: number) => void;
+  readonly file_favorite: (a: number) => number;
+  readonly item_item_type: (a: number) => number;
+  readonly file_name: (a: number, b: number) => void;
+  readonly file_creation: (a: number) => number;
+  readonly __wbg_asynciterator_free: (a: number) => void;
+  readonly asynciterator_next: (a: number) => number;
+  readonly __wbg_promiseresult_free: (a: number) => void;
+  readonly __wbg_get_promiseresult_done: (a: number) => number;
+  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
+  readonly promiseresult_new: (a: number) => number;
+  readonly promiseresult_value: (a: number) => number;
+  readonly generate_name: (a: number) => void;
+  readonly __wbg_identityprofile_free: (a: number) => void;
+  readonly identityprofile_new: (a: number, b: number, c: number) => number;
+  readonly identityprofile_identity: (a: number) => number;
+  readonly identityprofile_set_identity: (a: number, b: number) => void;
+  readonly identityprofile_passphrase: (a: number, b: number) => void;
+  readonly __wbg_identityimage_free: (a: number) => void;
+  readonly __wbg_relationship_free: (a: number) => void;
+  readonly relationship_sent_friend_request: (a: number) => number;
+  readonly relationship_blocked: (a: number) => number;
+  readonly relationship_blocked_by: (a: number) => number;
+  readonly __wbg_identity_free: (a: number) => void;
+  readonly identity_set_username: (a: number, b: number, c: number) => void;
+  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
+  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
+  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
+  readonly identity_set_created: (a: number, b: number) => void;
+  readonly identity_set_modified: (a: number, b: number) => void;
+  readonly identity_username: (a: number, b: number) => void;
+  readonly identity_status_message: (a: number, b: number) => void;
+  readonly identity_short_id: (a: number, b: number) => void;
+  readonly identity_did_key: (a: number, b: number) => void;
+  readonly identity_created: (a: number) => number;
+  readonly identity_modified: (a: number) => number;
+  readonly identity_metadata: (a: number) => number;
+  readonly __wbg_conversationimage_free: (a: number) => void;
+  readonly __wbg_groupsettings_free: (a: number) => void;
+  readonly groupsettings_new: () => number;
+  readonly groupsettings_members_can_add_participants: (a: number) => number;
+  readonly groupsettings_members_can_change_name: (a: number) => number;
+  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
+  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
+  readonly __wbg_directconversationsettings_free: (a: number) => void;
+  readonly relationship_friends: (a: number) => number;
+  readonly relationship_received_friend_request: (a: number) => number;
   readonly __wbg_multipassbox_free: (a: number) => void;
   readonly multipassbox_create_identity: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly multipassbox_get_identity: (a: number, b: number, c: number) => number;
@@ -1906,182 +2088,6 @@ export interface InitOutput {
   readonly multipasseventkind_did: (a: number, b: number) => void;
   readonly messagereference_id: (a: number, b: number) => void;
   readonly __wbg_raygunbox_free: (a: number) => void;
-  readonly __wbg_constellationbox_free: (a: number) => void;
-  readonly constellationbox_modified: (a: number) => number;
-  readonly constellationbox_root_directory: (a: number) => number;
-  readonly constellationbox_current_size: (a: number) => number;
-  readonly constellationbox_max_size: (a: number) => number;
-  readonly constellationbox_select: (a: number, b: number, c: number, d: number) => void;
-  readonly constellationbox_set_path: (a: number, b: number, c: number) => void;
-  readonly constellationbox_get_path: (a: number, b: number) => void;
-  readonly constellationbox_go_back: (a: number, b: number) => void;
-  readonly constellationbox_current_directory: (a: number, b: number) => void;
-  readonly constellationbox_open_directory: (a: number, b: number, c: number, d: number) => void;
-  readonly constellationbox_put_buffer: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly constellationbox_get_buffer: (a: number, b: number, c: number) => number;
-  readonly constellationbox_put_stream: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly constellationbox_get_stream: (a: number, b: number, c: number) => number;
-  readonly constellationbox_rename: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly constellationbox_remove: (a: number, b: number, c: number, d: number) => number;
-  readonly constellationbox_move_item: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly constellationbox_create_directory: (a: number, b: number, c: number, d: number) => number;
-  readonly constellationbox_sync_ref: (a: number, b: number, c: number) => number;
-  readonly __wbg_directory_free: (a: number) => void;
-  readonly directory_new: (a: number, b: number) => number;
-  readonly directory_has_item: (a: number, b: number, c: number) => number;
-  readonly directory_add_file: (a: number, b: number, c: number) => void;
-  readonly directory_add_directory: (a: number, b: number, c: number) => void;
-  readonly directory_get_item_index: (a: number, b: number, c: number, d: number) => void;
-  readonly directory_rename_item: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly directory_remove_item: (a: number, b: number, c: number, d: number) => void;
-  readonly directory_remove_item_from_path: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly directory_move_item_to: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly directory_get_items: (a: number, b: number) => void;
-  readonly directory_set_items: (a: number, b: number, c: number) => void;
-  readonly directory_add_item: (a: number, b: number, c: number) => void;
-  readonly directory_get_item: (a: number, b: number, c: number, d: number) => void;
-  readonly directory_find_item: (a: number, b: number, c: number, d: number) => void;
-  readonly directory_find_all_items: (a: number, b: number, c: number, d: number) => void;
-  readonly directory_get_last_directory_from_path: (a: number, b: number, c: number, d: number) => void;
-  readonly directory_get_item_by_path: (a: number, b: number, c: number, d: number) => void;
-  readonly directory_name: (a: number, b: number) => void;
-  readonly directory_set_name: (a: number, b: number, c: number) => void;
-  readonly directory_set_thumbnail_format: (a: number, b: number) => void;
-  readonly directory_thumbnail_format: (a: number) => number;
-  readonly directory_set_thumbnail: (a: number, b: number, c: number) => void;
-  readonly directory_thumbnail: (a: number, b: number) => void;
-  readonly directory_set_thumbnail_reference: (a: number, b: number, c: number) => void;
-  readonly directory_thumbnail_reference: (a: number, b: number) => void;
-  readonly directory_set_favorite: (a: number, b: number) => void;
-  readonly directory_favorite: (a: number) => number;
-  readonly directory_description: (a: number, b: number) => void;
-  readonly directory_set_description: (a: number, b: number, c: number) => void;
-  readonly directory_size: (a: number) => number;
-  readonly directory_set_creation: (a: number, b: number) => void;
-  readonly directory_set_modified: (a: number, b: number) => void;
-  readonly directory_path: (a: number, b: number) => void;
-  readonly directory_set_path: (a: number, b: number, c: number) => void;
-  readonly directory_id: (a: number, b: number) => void;
-  readonly directory_creation: (a: number) => number;
-  readonly directory_modified: (a: number) => number;
-  readonly __wbg_file_free: (a: number) => void;
-  readonly file_new: (a: number, b: number) => number;
-  readonly file_set_id: (a: number, b: number, c: number) => void;
-  readonly file_set_name: (a: number, b: number, c: number) => void;
-  readonly file_description: (a: number, b: number) => void;
-  readonly file_set_description: (a: number, b: number, c: number) => void;
-  readonly file_set_thumbnail_format: (a: number, b: number) => void;
-  readonly file_thumbnail_format: (a: number) => number;
-  readonly file_set_thumbnail: (a: number, b: number, c: number) => void;
-  readonly file_set_favorite: (a: number, b: number) => void;
-  readonly file_set_reference: (a: number, b: number, c: number) => void;
-  readonly file_set_thumbnail_reference: (a: number, b: number, c: number) => void;
-  readonly file_reference: (a: number, b: number) => void;
-  readonly file_size: (a: number) => number;
-  readonly file_set_size: (a: number, b: number) => void;
-  readonly file_set_creation: (a: number, b: number) => void;
-  readonly file_set_modified: (a: number, b: number) => void;
-  readonly file_hash: (a: number) => number;
-  readonly file_set_hash: (a: number, b: number) => void;
-  readonly file_set_file_type: (a: number, b: number) => void;
-  readonly file_file_type: (a: number) => number;
-  readonly file_path: (a: number, b: number) => void;
-  readonly file_set_path: (a: number, b: number, c: number) => void;
-  readonly file_id: (a: number, b: number) => void;
-  readonly file_modified: (a: number) => number;
-  readonly __wbg_item_free: (a: number) => void;
-  readonly item_new_file: (a: number) => number;
-  readonly item_new_directory: (a: number) => number;
-  readonly item_file: (a: number) => number;
-  readonly item_directory: (a: number) => number;
-  readonly item_id: (a: number, b: number) => void;
-  readonly item_creation: (a: number) => number;
-  readonly item_modified: (a: number) => number;
-  readonly item_name: (a: number, b: number) => void;
-  readonly item_description: (a: number, b: number) => void;
-  readonly item_size: (a: number) => number;
-  readonly item_thumbnail_format: (a: number) => number;
-  readonly item_thumbnail: (a: number, b: number) => void;
-  readonly item_favorite: (a: number) => number;
-  readonly item_set_favorite: (a: number, b: number) => void;
-  readonly item_rename: (a: number, b: number, c: number, d: number) => void;
-  readonly item_is_directory: (a: number) => number;
-  readonly item_is_file: (a: number) => number;
-  readonly item_set_description: (a: number, b: number, c: number) => void;
-  readonly item_set_thumbnail: (a: number, b: number, c: number) => void;
-  readonly item_set_thumbnail_format: (a: number, b: number) => void;
-  readonly item_set_size: (a: number, b: number, c: number) => void;
-  readonly item_path: (a: number, b: number) => void;
-  readonly item_set_path: (a: number, b: number, c: number) => void;
-  readonly item_get_directory: (a: number, b: number) => void;
-  readonly item_get_file: (a: number, b: number) => void;
-  readonly file_thumbnail: (a: number, b: number) => void;
-  readonly file_thumbnail_reference: (a: number, b: number) => void;
-  readonly file_favorite: (a: number) => number;
-  readonly item_item_type: (a: number) => number;
-  readonly file_name: (a: number, b: number) => void;
-  readonly file_creation: (a: number) => number;
-  readonly __wbg_asynciterator_free: (a: number) => void;
-  readonly asynciterator_next: (a: number) => number;
-  readonly __wbg_promiseresult_free: (a: number) => void;
-  readonly __wbg_get_promiseresult_done: (a: number) => number;
-  readonly __wbg_set_promiseresult_done: (a: number, b: number) => void;
-  readonly promiseresult_new: (a: number) => number;
-  readonly promiseresult_value: (a: number) => number;
-  readonly __wbg_hash_free: (a: number) => void;
-  readonly __wbg_tesseract_free: (a: number) => void;
-  readonly tesseract_new: () => number;
-  readonly tesseract_set_autosave: (a: number) => void;
-  readonly tesseract_autosave_enabled: (a: number) => number;
-  readonly tesseract_disable_key_check: (a: number) => void;
-  readonly tesseract_enable_key_check: (a: number) => void;
-  readonly tesseract_is_key_check_enabled: (a: number) => number;
-  readonly tesseract_exist: (a: number, b: number, c: number) => number;
-  readonly tesseract_clear: (a: number) => void;
-  readonly tesseract_is_unlock: (a: number) => number;
-  readonly tesseract_lock: (a: number) => void;
-  readonly tesseract_set: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract_retrieve: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_update_unlock: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly tesseract__delete: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_unlock: (a: number, b: number, c: number, d: number) => void;
-  readonly tesseract_save: (a: number, b: number) => void;
-  readonly tesseract_subscribe: (a: number) => number;
-  readonly tesseract_load_from_storage: (a: number, b: number) => void;
-  readonly generate_name: (a: number) => void;
-  readonly __wbg_identityprofile_free: (a: number) => void;
-  readonly identityprofile_new: (a: number, b: number, c: number) => number;
-  readonly identityprofile_identity: (a: number) => number;
-  readonly identityprofile_set_identity: (a: number, b: number) => void;
-  readonly identityprofile_passphrase: (a: number, b: number) => void;
-  readonly __wbg_identityimage_free: (a: number) => void;
-  readonly __wbg_relationship_free: (a: number) => void;
-  readonly relationship_sent_friend_request: (a: number) => number;
-  readonly relationship_blocked: (a: number) => number;
-  readonly relationship_blocked_by: (a: number) => number;
-  readonly __wbg_identity_free: (a: number) => void;
-  readonly identity_set_username: (a: number, b: number, c: number) => void;
-  readonly identity_set_status_message: (a: number, b: number, c: number) => void;
-  readonly identity_set_short_id: (a: number, b: number, c: number) => void;
-  readonly identity_set_did_key: (a: number, b: number, c: number) => void;
-  readonly identity_set_created: (a: number, b: number) => void;
-  readonly identity_set_modified: (a: number, b: number) => void;
-  readonly identity_username: (a: number, b: number) => void;
-  readonly identity_status_message: (a: number, b: number) => void;
-  readonly identity_short_id: (a: number, b: number) => void;
-  readonly identity_did_key: (a: number, b: number) => void;
-  readonly identity_created: (a: number) => number;
-  readonly identity_modified: (a: number) => number;
-  readonly identity_metadata: (a: number) => number;
-  readonly __wbg_groupsettings_free: (a: number) => void;
-  readonly groupsettings_new: () => number;
-  readonly groupsettings_members_can_add_participants: (a: number) => number;
-  readonly groupsettings_members_can_change_name: (a: number) => number;
-  readonly groupsettings_set_members_can_add_participants: (a: number, b: number) => void;
-  readonly groupsettings_set_members_can_change_name: (a: number, b: number) => void;
-  readonly __wbg_directconversationsettings_free: (a: number) => void;
-  readonly relationship_friends: (a: number) => number;
-  readonly relationship_received_friend_request: (a: number) => number;
   readonly __wbg_intounderlyingbytesource_free: (a: number) => void;
   readonly intounderlyingbytesource_type: (a: number, b: number) => void;
   readonly intounderlyingbytesource_autoAllocateChunkSize: (a: number) => number;
