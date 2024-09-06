@@ -1,20 +1,22 @@
+use warp::crypto::rand::seq::index;
 use warp::error::Error;
+use warp::multipass::identity::ShortId;
 use warp::{
     crypto::DID,
     multipass::{
         self,
         identity::{
-            self, Identity, IdentityProfile, IdentityStatus, Platform, Relationship,
+            self,
         },
         MultiPass,
-    },
-    tesseract::Tesseract,
+    }
 };
 use crate::warp::stream::AsyncIterator;
 use futures::StreamExt;
-use js_sys::{Array, Uint8Array};
+use js_sys::{Array, Map, Uint8Array};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
+use indexmap::IndexMap;
 
 #[derive(Clone)]
 #[wasm_bindgen]
@@ -39,6 +41,7 @@ impl MultiPassBox {
             .create_identity(username.as_deref(), passphrase.as_deref())
             .await
             .map_err(|e| e.into())
+            .map(|i|i.into())
     }
 
     pub async fn get_identity(
@@ -60,7 +63,7 @@ impl MultiPassBox {
     }
 
     pub async fn identity(&self) -> Result<Identity, JsError> {
-        self.inner.identity().await.map_err(|e| e.into())
+        self.inner.identity().await.map_err(|e| e.into()).map(|i|i.into())
     }
 
     pub fn tesseract(&self) -> crate::warp::tesseract::Tesseract {
@@ -263,12 +266,13 @@ impl MultiPassBox {
             .identity_status(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
+            .map(|i|i.into())
     }
 
     /// Identity status to determine if they are online or offline
     pub async fn set_identity_status(&mut self, status: IdentityStatus) -> Result<(), JsError> {
         self.inner
-            .set_identity_status(status)
+            .set_identity_status(status.into())
             .await
             .map_err(|e| e.into())
     }
@@ -279,6 +283,7 @@ impl MultiPassBox {
             .identity_relationship(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
+            .map(|r|r.into())
     }
 
     /// Returns the identity platform while online.
@@ -287,6 +292,7 @@ impl MultiPassBox {
             .identity_platform(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
+            .map(|p|p.into())
     }
 }
 
@@ -543,4 +549,169 @@ impl IdentityImage {
     pub fn image_type(&self) -> JsValue {
         serde_wasm_bindgen::to_value(&self.0.image_type()).unwrap()
     }
+}
+
+#[wasm_bindgen]
+pub struct Identity(warp::multipass::identity::Identity);
+
+#[wasm_bindgen]
+impl Identity {
+    pub fn username(&self) -> String {
+        self.0.username()
+    }
+    pub fn status_message(&self) -> Option<String> {
+        self.0.status_message()
+    }
+    pub fn short_id(&self) -> String {
+        format!("{}", self.0.short_id())
+    }
+    pub fn did_key(&self) -> String {
+        format!("{}", self.0.did_key())
+    }
+    pub fn created(&self) -> js_sys::Date {
+        self.0.created().into()
+    }
+    pub fn modified(&self) -> js_sys::Date {
+        self.0.modified().into()
+    }
+    pub fn metadata(&self) -> wasm_bindgen::JsValue {
+        serde_wasm_bindgen::to_value(&self.0.metadata()).expect("valid ser")
+    }
+}
+#[wasm_bindgen]
+impl Identity {
+    pub fn set_username(&mut self, user: String) {
+        self.0.set_username(&user);
+    }
+    pub fn set_status_message(&mut self, message: Option<String>) {
+        self.0.set_status_message(message);
+    }
+    pub fn set_short_id(&mut self, id: String) {
+        self.0.set_short_id::<ShortId>(id.try_into().unwrap());
+    }
+    pub fn set_did_key(&mut self, pubkey: String) {
+        self.0.set_did_key(DID::from_str(pubkey.as_str()).unwrap());
+    }
+    pub fn set_created(&mut self, time: js_sys::Date) {
+        self.0.set_created(time.into());
+    }
+    pub fn set_modified(&mut self, time: js_sys::Date) {
+        self.0.set_modified(time.into());
+    }
+    pub fn set_metadata(&mut self, map: Map) {
+        let mut index_map = IndexMap::new();
+        map.for_each(&mut |key, value| {
+            if key.is_string() && value.is_string() {
+                index_map.insert(key.as_string().unwrap(), value.as_string().unwrap());
+            }
+        });
+        self.0.set_metadata(index_map);
+    }
+}
+
+impl From<warp::multipass::identity::Identity> for Identity {
+    fn from(value: warp::multipass::identity::Identity) -> Self {
+        Identity(value)
+    }
+}
+
+#[wasm_bindgen]
+pub struct Relationship(warp::multipass::identity::Relationship);
+
+#[wasm_bindgen]
+impl Relationship {
+    pub fn friends(&self) -> bool {
+        self.0.friends()
+    }
+    pub fn received_friend_request(&self) -> bool {
+        self.0.received_friend_request()
+    }
+    pub fn sent_friend_request(&self) -> bool {
+        self.0.sent_friend_request()
+    }
+    pub fn blocked(&self) -> bool {
+        self.0.blocked()
+    }
+    pub fn blocked_by(&self) -> bool {
+        self.0.blocked_by()
+    }
+}
+
+impl From<warp::multipass::identity::Relationship> for Relationship {
+    fn from(value: warp::multipass::identity::Relationship) -> Self {
+        Relationship(value)
+    }
+}
+
+#[wasm_bindgen]
+pub struct IdentityProfile(warp::multipass::identity::IdentityProfile);
+
+#[wasm_bindgen]
+impl IdentityProfile {
+    pub fn identity(&self) -> Identity {
+        Identity(self.0.identity().clone())
+    }
+    pub fn passphrase(&self) -> Option<String> {
+        self.0.passphrase().map(|s|s.to_string())
+    }
+}
+
+impl From<warp::multipass::identity::IdentityProfile> for IdentityProfile {
+    fn from(value: warp::multipass::identity::IdentityProfile) -> Self {
+        IdentityProfile(value)
+    }
+}
+
+#[wasm_bindgen]
+pub enum Platform {
+    Desktop,
+    Mobile,
+    Web,
+    Unknown,
+}
+
+impl From<warp::multipass::identity::Platform> for Platform {
+    fn from(value: warp::multipass::identity::Platform) -> Self {
+        match value {
+            identity::Platform::Desktop => Platform::Desktop,
+            identity::Platform::Mobile => Platform::Mobile,
+            identity::Platform::Web => Platform::Web,
+            identity::Platform::Unknown => Platform::Unknown,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum IdentityStatus {
+    Online,
+    Away,
+    Busy,
+    Offline,
+}
+
+impl From<warp::multipass::identity::IdentityStatus> for IdentityStatus {
+    fn from(value: warp::multipass::identity::IdentityStatus) -> Self {
+        match value {
+            identity::IdentityStatus::Online => IdentityStatus::Online,
+            identity::IdentityStatus::Away => IdentityStatus::Away,
+            identity::IdentityStatus::Busy => IdentityStatus::Busy,
+            identity::IdentityStatus::Offline => IdentityStatus::Offline,
+        }
+    }
+}
+
+impl From<IdentityStatus> for warp::multipass::identity::IdentityStatus {
+    fn from(value: IdentityStatus) -> Self {
+        match value {
+            IdentityStatus::Online => identity::IdentityStatus::Online,
+            IdentityStatus::Away => identity::IdentityStatus::Away,
+            IdentityStatus::Busy => identity::IdentityStatus::Busy,
+            IdentityStatus::Offline => identity::IdentityStatus::Offline,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub fn generate_name() -> String {
+    warp::multipass::generator::generate_name()
 }

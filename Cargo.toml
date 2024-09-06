@@ -11,10 +11,11 @@ bytes = { version = "1", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
 serde = { version = "1.0", features = ["derive", "rc"] }
+indexmap = { version = "2.2.6", features = ["serde"] }
 
 # warp
-warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "e1f550e4eaf637aeb2a92c9fda44e325beab1705"}
-warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "e1f550e4eaf637aeb2a92c9fda44e325beab1705"}
+warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "5ea90a1e51e15bc843cfd39c2a06a15844da7884"}
+warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "5ea90a1e51e15bc843cfd39c2a06a15844da7884"}
 
 # wasm
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

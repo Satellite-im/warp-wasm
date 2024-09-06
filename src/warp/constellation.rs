@@ -1,4 +1,4 @@
-use warp::constellation::{self, file::Hash, item::ItemType, Constellation};
+use warp::constellation::{self, Constellation};
 use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
 use uuid::Uuid;
@@ -371,10 +371,10 @@ impl File {
         self.inner.set_modified(modified.map(|d| d.into()))
     }
     pub fn hash(&self) -> Hash {
-        self.inner.hash()
+        self.inner.hash().into()
     }
     pub fn set_hash(&self, hash: Hash) {
-        self.inner.set_hash(hash)
+        self.inner.set_hash(hash.into())
     }
     pub fn set_file_type(&self, file_type: JsValue) {
         self.inner
@@ -473,7 +473,7 @@ impl Item {
         self.inner.is_file()
     }
     pub fn item_type(&self) -> ItemType {
-        self.inner.item_type()
+        self.inner.item_type().into()
     }
     pub fn set_description(&self, desc: &str) {
         self.inner.set_description(desc)
@@ -574,5 +574,44 @@ impl From<constellation::Progression> for Progression {
                 error: error.to_string(),
             },
         }
+    }
+}
+
+#[wasm_bindgen]
+pub enum ItemType {
+    FileItem,
+    DirectoryItem,
+    InvalidItem,
+}
+
+impl From<warp::constellation::item::ItemType> for ItemType {
+    fn from(value: warp::constellation::item::ItemType) -> Self {
+        match value {
+            constellation::item::ItemType::FileItem => ItemType::FileItem,
+            constellation::item::ItemType::DirectoryItem => ItemType::DirectoryItem,
+            constellation::item::ItemType::InvalidItem => ItemType::InvalidItem,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub struct Hash(warp::constellation::file::Hash);
+
+#[wasm_bindgen]
+impl Hash {
+    pub fn sha256(&self) -> Option<String> {
+        self.0.sha256()
+    }
+}
+
+impl From<warp::constellation::file::Hash> for Hash {
+    fn from(value: warp::constellation::file::Hash) -> Self {
+        Hash(value)
+    }
+}
+
+impl From<Hash> for warp::constellation::file::Hash {
+    fn from(value: Hash) -> Self {
+        value.0
     }
 }

@@ -1,8 +1,8 @@
 use warp::{
     crypto::DID,
     raygun::{
-        self, EmbedState, GroupSettings, Location, LocationKind, MessageEvent, MessageStatus,
-        PinState, RayGun, ReactionState,
+        self, Location, LocationKind,
+        RayGun,
     },
 };
 use crate::warp::stream::{AsyncIterator, InnerStream};
@@ -49,7 +49,7 @@ impl RayGunBox {
             .map(|did| DID::from_str(did).unwrap())
             .collect();
         self.inner
-            .create_group_conversation(name, recipients, settings)
+            .create_group_conversation(name, recipients, settings.into())
             .await
             .map_err(|e| e.into())
             .map(|ok| Conversation::new(ok))
@@ -121,6 +121,7 @@ impl RayGunBox {
             )
             .await
             .map_err(|e| e.into())
+            .map(|ok|ok.into())
     }
 
     /// Retrieve all message references from a conversation
@@ -222,7 +223,7 @@ impl RayGunBox {
             .react(
                 Uuid::from_str(&conversation_id).unwrap(),
                 Uuid::from_str(&message_id).unwrap(),
-                state,
+                state.into(),
                 emoji,
             )
             .await
@@ -240,7 +241,7 @@ impl RayGunBox {
             .pin(
                 Uuid::from_str(&conversation_id).unwrap(),
                 Uuid::from_str(&message_id).unwrap(),
-                state,
+                state.into(),
             )
             .await
             .map_err(|e| e.into())
@@ -274,7 +275,7 @@ impl RayGunBox {
             .embeds(
                 Uuid::from_str(&conversation_id).unwrap(),
                 Uuid::from_str(&message_id).unwrap(),
-                state,
+                state.into(),
             )
             .await
             .map_err(|e| e.into())
@@ -442,7 +443,7 @@ impl RayGunBox {
         event: MessageEvent,
     ) -> Result<(), JsError> {
         self.inner
-            .send_event(Uuid::from_str(&conversation_id).unwrap(), event)
+            .send_event(Uuid::from_str(&conversation_id).unwrap(), event.into())
             .await
             .map_err(|e| e.into())
     }
@@ -454,7 +455,7 @@ impl RayGunBox {
         event: MessageEvent,
     ) -> Result<(), JsError> {
         self.inner
-            .cancel_event(Uuid::from_str(&conversation_id).unwrap(), event)
+            .cancel_event(Uuid::from_str(&conversation_id).unwrap(), event.into())
             .await
             .map_err(|e| e.into())
     }
@@ -704,8 +705,8 @@ impl Message {
         self.inner.id().to_string()
     }
 
-    pub fn message_type(&self) -> raygun::MessageType {
-        self.inner.message_type()
+    pub fn message_type(&self) -> MessageType {
+        self.inner.message_type().into()
     }
 
     pub fn conversation_id(&self) -> String {
@@ -839,6 +840,137 @@ impl From<raygun::AttachmentKind> for AttachmentKind {
             raygun::AttachmentKind::Pending(res) => {
                 AttachmentKind::Pending(res.map_err(|e| e.to_string()))
             }
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum EmbedState {
+    Enabled,
+    Disable,
+}
+
+impl From<EmbedState> for warp::raygun::EmbedState {
+    fn from(value: EmbedState) -> Self {
+        match value {
+            EmbedState::Enabled => raygun::EmbedState::Enabled,
+            EmbedState::Disable => raygun::EmbedState::Disable,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum PinState {
+    Pin,
+    Unpin,
+}
+
+impl From<PinState> for warp::raygun::PinState {
+    fn from(value: PinState) -> Self {
+        match value {
+            PinState::Pin => raygun::PinState::Pin,
+            PinState::Unpin => raygun::PinState::Unpin,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum ReactionState {
+    Add,
+    Remove,
+}
+
+impl From<ReactionState> for warp::raygun::ReactionState {
+    fn from(value: ReactionState) -> Self {
+        match value {
+            ReactionState::Add => raygun::ReactionState::Add,
+            ReactionState::Remove => raygun::ReactionState::Remove,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum MessageStatus {
+    NotSent,
+    Sent,
+    Delivered,
+}
+
+impl From<warp::raygun::MessageStatus> for MessageStatus {
+    fn from(value: warp::raygun::MessageStatus) -> Self {
+        match value {
+            warp::raygun::MessageStatus::NotSent => MessageStatus::NotSent,
+            warp::raygun::MessageStatus::Sent => MessageStatus::Sent,
+            warp::raygun::MessageStatus::Delivered => MessageStatus::Delivered,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum MessageType {
+    Message,
+    Attachment,
+    Event,
+}
+
+impl From<warp::raygun::MessageType> for MessageType {
+    fn from(value: warp::raygun::MessageType) -> Self {
+        match value {
+            warp::raygun::MessageType::Message => MessageType::Message,
+            warp::raygun::MessageType::Attachment => MessageType::Attachment,
+            warp::raygun::MessageType::Event => MessageType::Event,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub struct GroupSettings(warp::raygun::GroupSettings);
+
+#[wasm_bindgen]
+impl GroupSettings {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self(warp::raygun::GroupSettings::new())
+    }
+
+    pub fn members_can_add_participants(&self) -> bool {
+        self.0.members_can_add_participants()
+    }
+
+    pub fn members_can_change_name(&self) -> bool {
+        self.0.members_can_change_name()
+    }
+
+    pub fn set_members_can_add_participants(&mut self, val: bool) {
+        self.0.set_members_can_add_participants(val);
+    }
+
+    pub fn set_members_can_change_name(&mut self, val: bool) {
+        self.0.set_members_can_change_name(val);
+    }
+}
+
+impl From<GroupSettings> for warp::raygun::GroupSettings {
+    fn from(value: GroupSettings) -> Self {
+        value.0
+    }
+}
+
+#[wasm_bindgen]
+pub struct DirectConversationSettings(warp::raygun::DirectConversationSettings);
+
+#[wasm_bindgen]
+pub struct ConversationImage(warp::raygun::ConversationImage);
+
+#[wasm_bindgen]
+pub enum MessageEvent {
+    Typing,
+}
+
+impl From<MessageEvent> for warp::raygun::MessageEvent {
+    fn from(value: MessageEvent) -> Self {
+        match value {
+            MessageEvent::Typing => raygun::MessageEvent::Typing,
         }
     }
 }

@@ -90,10 +90,24 @@ impl Tesseract {
     }
 
     pub fn subscribe(&self) -> AsyncIterator {
-        AsyncIterator::new(Box::pin(self.0.subscribe().map(|t| Into::<JsValue>::into(t))))
+        AsyncIterator::new(Box::pin(self.0.subscribe().map(|t| Into::<JsValue>::into(Into::<TesseractEvent>::into(t)))))
     }
 
     pub fn load_from_storage(&self) -> std::result::Result<(), JsError> {
         self.0.load_from_storage().map_err(|e| e.into())
+    }
+}
+
+#[wasm_bindgen]
+pub enum TesseractEvent {
+    Unlocked,
+    Locked
+}
+impl From<warp::tesseract::TesseractEvent> for TesseractEvent {
+    fn from(value: warp::tesseract::TesseractEvent) -> Self {
+        match value {
+            warp::tesseract::TesseractEvent::Unlocked => TesseractEvent::Unlocked,
+            warp::tesseract::TesseractEvent::Locked => TesseractEvent::Locked,
+        }
     }
 }
