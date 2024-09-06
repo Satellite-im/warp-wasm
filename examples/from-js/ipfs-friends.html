@@ -81,13 +81,14 @@
 
       console.log(`${username(identity_a)} Outgoing requests:`)
       for (let outgoing of await account_a.list_outgoing_request()) {
-          let ident = await account_a.get_identity(wasm.Identifier.DID, outgoing)
+          console.log(outgoing)
+          let ident = await account_a.get_identity(wasm.Identifier.DID, outgoing.identity)
           console.log(`To: ${ident[0].username}`);
       }
 
       console.log(`${username(identity_b)} Incoming requests:`)
       for (let incoming of await account_b.list_incoming_request()) {
-          let ident = await account_b.get_identity(wasm.Identifier.DID, incoming)
+          let ident = await account_b.get_identity(wasm.Identifier.DID, incoming.identity)
           console.log(`From: ${ident[0].username}`);
       }
 

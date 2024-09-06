@@ -32,7 +32,7 @@
       try {
         conversation_id = (await warp.raygun.create_conversation(peer_identity_did_key)).id()
       } catch {
-        conversation_id = (await warp.raygun.list_conversations())[0].inner.id
+        conversation_id = (await warp.raygun.list_conversations()).convs()[0].id()
       }
       console.log(conversation_id)
 
