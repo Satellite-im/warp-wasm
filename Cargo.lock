@@ -5884,7 +5884,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "warp-ipfs_js"
+name = "warp-wasm"
 version = "0.1.0"
 dependencies = [
  "bytes",

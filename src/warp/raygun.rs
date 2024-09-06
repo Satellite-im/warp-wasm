@@ -959,8 +959,8 @@ impl From<GroupSettings> for warp::raygun::GroupSettings {
 #[wasm_bindgen]
 pub struct DirectConversationSettings(warp::raygun::DirectConversationSettings);
 
-#[wasm_bindgen]
-pub struct ConversationImage(warp::raygun::ConversationImage);
+// #[wasm_bindgen]
+// pub struct ConversationImage(warp::raygun::ConversationImage);
 
 #[wasm_bindgen]
 pub enum MessageEvent {

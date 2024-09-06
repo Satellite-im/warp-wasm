@@ -1,9 +1,8 @@
-use std::path::PathBuf;
 
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub struct WarpIpfs(warp_ipfs::WarpIpfs);
+pub struct WarpIpfs;
 
 #[wasm_bindgen]
 impl WarpIpfs {

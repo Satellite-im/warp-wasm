@@ -1,4 +1,3 @@
-use warp::crypto::rand::seq::index;
 use warp::error::Error;
 use warp::multipass::identity::ShortId;
 use warp::{
