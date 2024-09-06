@@ -1,14 +1,6 @@
-git submodule update --init --recursive --remote
-cd Warp/extensions/warp-ipfs
-wasm-pack build --target web
-
-cd ../../..
-
-# Check if the source directory exists
-if [ -d "Warp/extensions/warp-ipfs/pkg" ]; then
-    # Move the pkg directory to the repository's root
-    mv Warp/extensions/warp-ipfs/pkg .
-    echo "Pkg folder moved successfully."
-else
-    echo "The source directory does not exist."
-fi
+wasm-pack build --target web --out-dir temp
+mv temp/warp_ipfs_bg.wasm pkg/warp_ipfs_bg.wasm
+mv temp/warp_ipfs_bg.wasm.d.ts pkg/warp_ipfs_bg.wasm.d.ts
+mv temp/warp_ipfs.d.ts pkg/warp_ipfs.d.ts
+mv temp/warp_ipfs.js pkg/warp_ipfs.js
+rm -r temp
