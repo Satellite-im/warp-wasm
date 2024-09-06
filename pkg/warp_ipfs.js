@@ -334,10 +334,7 @@ function __wbg_adapter_659(arg0, arg1, arg2, arg3) {
 
 /**
 */
-export const IdentityStatus = Object.freeze({ Online:0,"0":"Online",Away:1,"1":"Away",Busy:2,"2":"Busy",Offline:3,"3":"Offline", });
-/**
-*/
-export const ItemType = Object.freeze({ FileItem:0,"0":"FileItem",DirectoryItem:1,"1":"DirectoryItem",InvalidItem:2,"2":"InvalidItem", });
+export const TesseractEvent = Object.freeze({ Unlocked:0,"0":"Unlocked",Locked:1,"1":"Locked", });
 /**
 */
 export const ReactionState = Object.freeze({ Add:0,"0":"Add",Remove:1,"1":"Remove", });
@@ -346,34 +343,37 @@ export const ReactionState = Object.freeze({ Add:0,"0":"Add",Remove:1,"1":"Remov
 export const MessageType = Object.freeze({ Message:0,"0":"Message",Attachment:1,"1":"Attachment",Event:2,"2":"Event", });
 /**
 */
-export const MultiPassEventKindEnum = Object.freeze({ FriendRequestReceived:0,"0":"FriendRequestReceived",FriendRequestSent:1,"1":"FriendRequestSent",IncomingFriendRequestRejected:2,"2":"IncomingFriendRequestRejected",OutgoingFriendRequestRejected:3,"3":"OutgoingFriendRequestRejected",IncomingFriendRequestClosed:4,"4":"IncomingFriendRequestClosed",OutgoingFriendRequestClosed:5,"5":"OutgoingFriendRequestClosed",FriendAdded:6,"6":"FriendAdded",FriendRemoved:7,"7":"FriendRemoved",IdentityOnline:8,"8":"IdentityOnline",IdentityOffline:9,"9":"IdentityOffline",IdentityUpdate:10,"10":"IdentityUpdate",Blocked:11,"11":"Blocked",BlockedBy:12,"12":"BlockedBy",Unblocked:13,"13":"Unblocked",UnblockedBy:14,"14":"UnblockedBy", });
-/**
-*/
 export const MessageEvent = Object.freeze({ Typing:0,"0":"Typing", });
-/**
-*/
-export const TesseractEvent = Object.freeze({ Unlocked:0,"0":"Unlocked",Locked:1,"1":"Locked", });
-/**
-*/
-export const EmbedState = Object.freeze({ Enabled:0,"0":"Enabled",Disable:1,"1":"Disable", });
 /**
 */
 export const IdentityUpdate = Object.freeze({ Username:0,"0":"Username",Picture:1,"1":"Picture",PicturePath:2,"2":"PicturePath",PictureStream:3,"3":"PictureStream",ClearPicture:4,"4":"ClearPicture",Banner:5,"5":"Banner",BannerPath:6,"6":"BannerPath",BannerStream:7,"7":"BannerStream",ClearBanner:8,"8":"ClearBanner",StatusMessage:9,"9":"StatusMessage",ClearStatusMessage:10,"10":"ClearStatusMessage",AddMetadataKey:11,"11":"AddMetadataKey",RemoveMetadataKey:12,"12":"RemoveMetadataKey", });
 /**
 */
-export const Identifier = Object.freeze({ DID:0,"0":"DID",DIDList:1,"1":"DIDList",Username:2,"2":"Username", });
+export const MessageStatus = Object.freeze({ NotSent:0,"0":"NotSent",Sent:1,"1":"Sent",Delivered:2,"2":"Delivered", });
 /**
 */
-export const Platform = Object.freeze({ Desktop:0,"0":"Desktop",Mobile:1,"1":"Mobile",Web:2,"2":"Web",Unknown:3,"3":"Unknown", });
+export const MultiPassEventKindEnum = Object.freeze({ FriendRequestReceived:0,"0":"FriendRequestReceived",FriendRequestSent:1,"1":"FriendRequestSent",IncomingFriendRequestRejected:2,"2":"IncomingFriendRequestRejected",OutgoingFriendRequestRejected:3,"3":"OutgoingFriendRequestRejected",IncomingFriendRequestClosed:4,"4":"IncomingFriendRequestClosed",OutgoingFriendRequestClosed:5,"5":"OutgoingFriendRequestClosed",FriendAdded:6,"6":"FriendAdded",FriendRemoved:7,"7":"FriendRemoved",IdentityOnline:8,"8":"IdentityOnline",IdentityOffline:9,"9":"IdentityOffline",IdentityUpdate:10,"10":"IdentityUpdate",Blocked:11,"11":"Blocked",BlockedBy:12,"12":"BlockedBy",Unblocked:13,"13":"Unblocked",UnblockedBy:14,"14":"UnblockedBy", });
 /**
 */
 export const MessagesEnum = Object.freeze({ List:0,"0":"List",Stream:1,"1":"Stream",Page:2,"2":"Page", });
 /**
 */
+export const Platform = Object.freeze({ Desktop:0,"0":"Desktop",Mobile:1,"1":"Mobile",Web:2,"2":"Web",Unknown:3,"3":"Unknown", });
+/**
+*/
+export const IdentityStatus = Object.freeze({ Online:0,"0":"Online",Away:1,"1":"Away",Busy:2,"2":"Busy",Offline:3,"3":"Offline", });
+/**
+*/
+export const ItemType = Object.freeze({ FileItem:0,"0":"FileItem",DirectoryItem:1,"1":"DirectoryItem",InvalidItem:2,"2":"InvalidItem", });
+/**
+*/
+export const Identifier = Object.freeze({ DID:0,"0":"DID",DIDList:1,"1":"DIDList",Username:2,"2":"Username", });
+/**
+*/
 export const PinState = Object.freeze({ Pin:0,"0":"Pin",Unpin:1,"1":"Unpin", });
 /**
 */
-export const MessageStatus = Object.freeze({ NotSent:0,"0":"NotSent",Sent:1,"1":"Sent",Delivered:2,"2":"Delivered", });
+export const EmbedState = Object.freeze({ Enabled:0,"0":"Enabled",Disable:1,"1":"Disable", });
 
 const AsyncIteratorFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
@@ -4505,52 +4505,24 @@ function __wbg_get_imports() {
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
     };
-    imports.wbg.__wbindgen_number_new = function(arg0) {
-        const ret = arg0;
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_attachmentresult_new = function(arg0) {
-        const ret = AttachmentResult.__wrap(arg0);
+    imports.wbg.__wbg_identityprofile_new = function(arg0) {
+        const ret = IdentityProfile.__wrap(arg0);
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_asynciterator_new = function(arg0) {
         const ret = AsyncIterator.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_message_new = function(arg0) {
-        const ret = Message.__wrap(arg0);
-        return addHeapObject(ret);
-    };
     imports.wbg.__wbg_conversation_new = function(arg0) {
         const ret = Conversation.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
-        const ret = getStringFromWasm0(arg0, arg1);
+    imports.wbg.__wbindgen_number_new = function(arg0) {
+        const ret = arg0;
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_identityimage_new = function(arg0) {
         const ret = IdentityImage.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_conversationlist_new = function(arg0) {
-        const ret = ConversationList.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_messages_new = function(arg0) {
-        const ret = Messages.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_identityprofile_new = function(arg0) {
-        const ret = IdentityProfile.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_relationship_new = function(arg0) {
-        const ret = Relationship.__wrap(arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_identity_new = function(arg0) {
-        const ret = Identity.__wrap(arg0);
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_messagereference_new = function(arg0) {
@@ -4559,6 +4531,34 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbg_warpinstance_new = function(arg0) {
         const ret = WarpInstance.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_relationship_new = function(arg0) {
+        const ret = Relationship.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_message_new = function(arg0) {
+        const ret = Message.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_attachmentresult_new = function(arg0) {
+        const ret = AttachmentResult.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_identity_new = function(arg0) {
+        const ret = Identity.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_messages_new = function(arg0) {
+        const ret = Messages.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
+        const ret = getStringFromWasm0(arg0, arg1);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_conversationlist_new = function(arg0) {
+        const ret = ConversationList.__wrap(arg0);
         return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_error_new = function(arg0, arg1) {

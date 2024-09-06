@@ -17,18 +17,9 @@ export function generate_name(): string;
 export function message_from(js: any): Message;
 /**
 */
-export enum IdentityStatus {
-  Online = 0,
-  Away = 1,
-  Busy = 2,
-  Offline = 3,
-}
-/**
-*/
-export enum ItemType {
-  FileItem = 0,
-  DirectoryItem = 1,
-  InvalidItem = 2,
+export enum TesseractEvent {
+  Unlocked = 0,
+  Locked = 1,
 }
 /**
 */
@@ -42,6 +33,35 @@ export enum MessageType {
   Message = 0,
   Attachment = 1,
   Event = 2,
+}
+/**
+*/
+export enum MessageEvent {
+  Typing = 0,
+}
+/**
+*/
+export enum IdentityUpdate {
+  Username = 0,
+  Picture = 1,
+  PicturePath = 2,
+  PictureStream = 3,
+  ClearPicture = 4,
+  Banner = 5,
+  BannerPath = 6,
+  BannerStream = 7,
+  ClearBanner = 8,
+  StatusMessage = 9,
+  ClearStatusMessage = 10,
+  AddMetadataKey = 11,
+  RemoveMetadataKey = 12,
+}
+/**
+*/
+export enum MessageStatus {
+  NotSent = 0,
+  Sent = 1,
+  Delivered = 2,
 }
 /**
 */
@@ -64,44 +84,10 @@ export enum MultiPassEventKindEnum {
 }
 /**
 */
-export enum MessageEvent {
-  Typing = 0,
-}
-/**
-*/
-export enum TesseractEvent {
-  Unlocked = 0,
-  Locked = 1,
-}
-/**
-*/
-export enum EmbedState {
-  Enabled = 0,
-  Disable = 1,
-}
-/**
-*/
-export enum IdentityUpdate {
-  Username = 0,
-  Picture = 1,
-  PicturePath = 2,
-  PictureStream = 3,
-  ClearPicture = 4,
-  Banner = 5,
-  BannerPath = 6,
-  BannerStream = 7,
-  ClearBanner = 8,
-  StatusMessage = 9,
-  ClearStatusMessage = 10,
-  AddMetadataKey = 11,
-  RemoveMetadataKey = 12,
-}
-/**
-*/
-export enum Identifier {
-  DID = 0,
-  DIDList = 1,
-  Username = 2,
+export enum MessagesEnum {
+  List = 0,
+  Stream = 1,
+  Page = 2,
 }
 /**
 */
@@ -113,10 +99,25 @@ export enum Platform {
 }
 /**
 */
-export enum MessagesEnum {
-  List = 0,
-  Stream = 1,
-  Page = 2,
+export enum IdentityStatus {
+  Online = 0,
+  Away = 1,
+  Busy = 2,
+  Offline = 3,
+}
+/**
+*/
+export enum ItemType {
+  FileItem = 0,
+  DirectoryItem = 1,
+  InvalidItem = 2,
+}
+/**
+*/
+export enum Identifier {
+  DID = 0,
+  DIDList = 1,
+  Username = 2,
 }
 /**
 */
@@ -126,10 +127,9 @@ export enum PinState {
 }
 /**
 */
-export enum MessageStatus {
-  NotSent = 0,
-  Sent = 1,
-  Delivered = 2,
+export enum EmbedState {
+  Enabled = 0,
+  Disable = 1,
 }
 /**
 * Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
