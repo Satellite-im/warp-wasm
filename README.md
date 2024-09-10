@@ -10,9 +10,9 @@ Web Assembly TypeScript library for interfacing with Warp.
 cargo install wasm-pack
 ```
 
-3 - Build the wasm
+3 - Run examples
 ```
-sh generate_wasm_pkg.sh
+cargo run --example from-js
 ```
 
 ### Updating Warp
@@ -25,3 +25,22 @@ sh generate_wasm_pkg.sh
 ```
 
 3 - Fix any issues and push a new version to `npm`
+
+### Publishing to npm
+
+1 - Make sure jq is installed (used for bumping version in package.json)
+```
+brew install jq
+```
+
+2 - Build (specify version to bump: [major/minor/patch])
+```
+sh build.sh minor
+```
+
+3 - Publish to npm
+
+```
+cd pkg
+npm publish
+```

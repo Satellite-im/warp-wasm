@@ -112,5 +112,8 @@ dist
 **/.DS_Store
 .DS_Store
 
-# Built wasm files
+# Built wasm files for examples
 built-wasm/
+
+# Built files from publishing to npm
+/pkg

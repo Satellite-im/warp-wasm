@@ -1,6 +1,7 @@
 {
   "name": "warp-ipfs",
   "version": "0.1.0",
+  "description": "Web Assembly TypeScript library for interfacing with Warp.",
   "files": [
     "warp_ipfs_bg.wasm",
     "warp_ipfs.js",
@@ -10,5 +11,15 @@
   "types": "warp_ipfs.d.ts",
   "sideEffects": [
     "./snippets/*"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Satellite-im/warp-wasm.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Satellite-im/warp-wasm/issues"
+  },
+  "homepage": "https://github.com/Satellite-im/warp-wasm#readme",
 }
