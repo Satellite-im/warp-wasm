@@ -10,14 +10,37 @@ Web Assembly TypeScript library for interfacing with Warp.
 cargo install wasm-pack
 ```
 
-3 - Run the script 
+3 - Run examples
+```
+cargo run --example from-js
+```
+
+### Updating Warp
+
+1 - Get a new commit hash from `Warp` repo. Set the same hash for both `Warp` and `warp-ipfs` in the `Cargo.toml` of this repo.
+
+2 - Rebuild the wasm
 ```
 sh generate_wasm_pkg.sh
 ```
 
-<!-- ### Updating this library:
+3 - Fix any issues and push a new version to `npm`
+
+### Publishing to npm
+
+1 - Make sure jq is installed (used for bumping version in package.json)
+```
+brew install jq
+```
+
+2 - Build (specify version to bump: [major/minor/patch])
+```
+sh build.sh minor
+```
+
+3 - Publish to npm
 
 ```
-git submodule update --init --recursive --remote
-wasm-pack build Warp/extensions/warp-ipfs --target web --out-dir ../../../pkg
-``` -->
+cd pkg
+npm publish
+```
