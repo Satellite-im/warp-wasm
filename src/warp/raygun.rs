@@ -11,6 +11,7 @@ use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use uuid::Uuid;
+use warp::raygun::{RayGunAttachment, RayGunEvents, RayGunGroupConversation, RayGunStream};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};

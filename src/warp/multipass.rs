@@ -16,6 +16,7 @@ use js_sys::{Array, Map, Uint8Array};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 use indexmap::IndexMap;
+use warp::multipass::{Friends, IdentityInformation, LocalIdentity, MultiPassEvent};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
