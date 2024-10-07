@@ -11,7 +11,7 @@ impl WarpIpfs {
         config: Config,
         tesseract: Option<crate::warp::tesseract::Tesseract>,
     ) -> crate::warp::WarpInstance {
-        let mut builder = warp_ipfs::WarpIpfsBuilder::default().set_config(config.0);;
+        let mut builder = warp_ipfs::WarpIpfsBuilder::default().set_config(config.0);
         if let Some(tesseract) = tesseract {
             builder = builder.set_tesseract(tesseract.into());
         }
