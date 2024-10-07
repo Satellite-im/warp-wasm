@@ -11,6 +11,9 @@ use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use uuid::Uuid;
+use warp::warp::dummy::Dummy;
+use warp::warp::Warp;
+use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
 use wasm_bindgen::prelude::*;
 
 use super::constellation::Progression;
@@ -18,11 +21,11 @@ use super::constellation::Progression;
 #[derive(Clone)]
 #[wasm_bindgen]
 pub struct RayGunBox {
-    inner: Box<dyn RayGun>,
+    inner: Warp<Dummy, WarpIpfs, Dummy>
 }
 impl RayGunBox {
-    pub fn new(raygun: Box<dyn RayGun>) -> Self {
-        Self { inner: raygun }
+    pub fn new(instance: &WarpIpfsInstance) -> Self {
+        Self { inner: instance.clone().split_raygun() }
     }
 }
 

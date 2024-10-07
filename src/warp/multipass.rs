@@ -16,15 +16,18 @@ use js_sys::{Array, Map, Uint8Array};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 use indexmap::IndexMap;
+use warp::warp::dummy::Dummy;
+use warp::warp::Warp;
+use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
 
 #[derive(Clone)]
 #[wasm_bindgen]
 pub struct MultiPassBox {
-    inner: Box<dyn MultiPass>,
+    inner: Warp<WarpIpfs, Dummy, Dummy>,
 }
 impl MultiPassBox {
-    pub fn new(multipass: Box<dyn MultiPass>) -> Self {
-        Self { inner: multipass }
+    pub fn new(instance: &WarpIpfsInstance) -> Self {
+        Self { inner: instance.clone().split_multipass() }
     }
 }
 
