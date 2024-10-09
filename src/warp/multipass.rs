@@ -1,25 +1,23 @@
+use crate::warp::stream::AsyncIterator;
+use futures::StreamExt;
+use indexmap::IndexMap;
+use js_sys::{Array, Map, Uint8Array};
+use std::str::FromStr;
 use warp::error::Error;
 use warp::multipass::identity::ShortId;
+use warp::multipass::{Friends, IdentityInformation, LocalIdentity, MultiPassEvent};
+use warp::warp::dummy::Dummy;
+use warp::warp::Warp;
 use warp::{
     crypto::DID,
     multipass::{
         self,
-        identity::{
-            self,
-        },
+        identity::{self},
         MultiPass,
-    }
+    },
 };
-use crate::warp::stream::AsyncIterator;
-use futures::StreamExt;
-use js_sys::{Array, Map, Uint8Array};
-use std::str::FromStr;
-use wasm_bindgen::prelude::*;
-use indexmap::IndexMap;
-use warp::multipass::{Friends, IdentityInformation, LocalIdentity, MultiPassEvent};
-use warp::warp::dummy::Dummy;
-use warp::warp::Warp;
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
+use wasm_bindgen::prelude::*;
 
 #[derive(Clone)]
 #[wasm_bindgen]
@@ -28,7 +26,9 @@ pub struct MultiPassBox {
 }
 impl MultiPassBox {
     pub fn new(instance: &WarpIpfsInstance) -> Self {
-        Self { inner: instance.clone().split_multipass() }
+        Self {
+            inner: instance.clone().split_multipass(),
+        }
     }
 }
 
@@ -44,7 +44,7 @@ impl MultiPassBox {
             .create_identity(username.as_deref(), passphrase.as_deref())
             .await
             .map_err(|e| e.into())
-            .map(|i|i.into())
+            .map(|i| i.into())
     }
 
     pub async fn get_identity(
@@ -66,7 +66,11 @@ impl MultiPassBox {
     }
 
     pub async fn identity(&self) -> Result<Identity, JsError> {
-        self.inner.identity().await.map_err(|e| e.into()).map(|i|i.into())
+        self.inner
+            .identity()
+            .await
+            .map_err(|e| e.into())
+            .map(|i| i.into())
     }
 
     pub fn tesseract(&self) -> crate::warp::tesseract::Tesseract {
@@ -243,15 +247,12 @@ impl MultiPassBox {
 #[wasm_bindgen]
 impl MultiPassBox {
     /// Profile picture belonging to the `Identity`
-    pub async fn identity_picture(
-        &self,
-        did: String,
-    ) -> Result<IdentityImage, JsError> {
+    pub async fn identity_picture(&self, did: String) -> Result<IdentityImage, JsError> {
         self.inner
             .identity_picture(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
-            .map(|i |IdentityImage(i))
+            .map(|i| IdentityImage(i))
     }
 
     /// Profile banner belonging to the `Identity`
@@ -260,7 +261,7 @@ impl MultiPassBox {
             .identity_banner(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
-            .map(|i |IdentityImage(i))
+            .map(|i| IdentityImage(i))
     }
 
     /// Identity status to determine if they are online or offline
@@ -269,7 +270,7 @@ impl MultiPassBox {
             .identity_status(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
-            .map(|i|i.into())
+            .map(|i| i.into())
     }
 
     /// Identity status to determine if they are online or offline
@@ -286,7 +287,7 @@ impl MultiPassBox {
             .identity_relationship(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
-            .map(|r|r.into())
+            .map(|r| r.into())
     }
 
     /// Returns the identity platform while online.
@@ -295,7 +296,7 @@ impl MultiPassBox {
             .identity_platform(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
-            .map(|p|p.into())
+            .map(|p| p.into())
     }
 }
 
@@ -655,7 +656,7 @@ impl IdentityProfile {
         Identity(self.0.identity().clone())
     }
     pub fn passphrase(&self) -> Option<String> {
-        self.0.passphrase().map(|s|s.to_string())
+        self.0.passphrase().map(|s| s.to_string())
     }
 }
 

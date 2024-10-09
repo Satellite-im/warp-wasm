@@ -1,7 +1,7 @@
-use warp_ipfs::WarpIpfsInstance;
 use constellation::ConstellationBox;
 use multipass::MultiPassBox;
 use raygun::RayGunBox;
+use warp_ipfs::WarpIpfsInstance;
 
 use wasm_bindgen::prelude::*;
 
@@ -30,7 +30,6 @@ pub struct WarpInstance {
 
 impl WarpInstance {
     pub fn new(instance: WarpIpfsInstance) -> Self {
-
         let multipass = MultiPassBox::new(&instance);
         let raygun = RayGunBox::new(&instance);
         let constellation = ConstellationBox::new(&instance);

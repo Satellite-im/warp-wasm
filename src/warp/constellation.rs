@@ -1,7 +1,7 @@
-use warp::constellation::{self, Constellation};
 use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
 use uuid::Uuid;
+use warp::constellation::{self, Constellation};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
@@ -10,7 +10,7 @@ use wasm_bindgen::prelude::*;
 #[derive(Clone)]
 #[wasm_bindgen]
 pub struct ConstellationBox {
-    inner: Warp<Dummy, Dummy, WarpIpfs>
+    inner: Warp<Dummy, Dummy, WarpIpfs>,
 }
 impl ConstellationBox {
     pub fn new(instance: &WarpIpfsInstance) -> Self {

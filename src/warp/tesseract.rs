@@ -23,11 +23,11 @@ impl Tesseract {
     pub fn new() -> Tesseract {
         Tesseract(warp::tesseract::Tesseract::new())
     }
-    
+
     pub fn set_autosave(&self) {
         self.0.set_autosave()
     }
-    
+
     pub fn autosave_enabled(&self) -> bool {
         self.0.autosave_enabled()
     }
@@ -35,23 +35,23 @@ impl Tesseract {
     pub fn disable_key_check(&self) {
         self.0.disable_key_check()
     }
-    
+
     pub fn enable_key_check(&self) {
         self.0.enable_key_check()
     }
-    
+
     pub fn is_key_check_enabled(&self) -> bool {
         self.0.is_key_check_enabled()
     }
-    
+
     pub fn exist(&self, key: &str) -> bool {
         self.0.exist(key)
     }
-    
+
     pub fn clear(&self) {
         self.0.clear()
     }
-    
+
     pub fn is_unlock(&self) -> bool {
         self.0.is_unlock()
     }
@@ -73,7 +73,8 @@ impl Tesseract {
         old_passphrase: &[u8],
         new_passphrase: &[u8],
     ) -> std::result::Result<(), JsError> {
-        self.0.update_unlock(old_passphrase, new_passphrase)
+        self.0
+            .update_unlock(old_passphrase, new_passphrase)
             .map_err(|e| e.into())
     }
 
@@ -90,7 +91,11 @@ impl Tesseract {
     }
 
     pub fn subscribe(&self) -> AsyncIterator {
-        AsyncIterator::new(Box::pin(self.0.subscribe().map(|t| Into::<JsValue>::into(Into::<TesseractEvent>::into(t)))))
+        AsyncIterator::new(Box::pin(
+            self.0
+                .subscribe()
+                .map(|t| Into::<JsValue>::into(Into::<TesseractEvent>::into(t))),
+        ))
     }
 
     pub fn load_from_storage(&self) -> std::result::Result<(), JsError> {
@@ -101,7 +106,7 @@ impl Tesseract {
 #[wasm_bindgen]
 pub enum TesseractEvent {
     Unlocked,
-    Locked
+    Locked,
 }
 impl From<warp::tesseract::TesseractEvent> for TesseractEvent {
     fn from(value: warp::tesseract::TesseractEvent) -> Self {
