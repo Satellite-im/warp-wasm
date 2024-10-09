@@ -19,12 +19,7 @@ cargo run --example from-js
 
 1 - Get a new commit hash from `Warp` repo. Set the same hash for both `Warp` and `warp-ipfs` in the `Cargo.toml` of this repo.
 
-2 - Rebuild the wasm
-```
-sh generate_wasm_pkg.sh
-```
-
-3 - Fix any issues and push a new version to `npm`
+2 - Fix any issues and push a new version to `npm`
 
 ### Publishing to npm
 
