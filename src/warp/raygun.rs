@@ -1,16 +1,18 @@
-use warp::{
-    crypto::DID,
-    raygun::{
-        self, Location, LocationKind,
-        RayGun,
-    },
-};
 use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
+use indexmap::IndexSet;
 use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use uuid::Uuid;
+use warp::raygun::{RayGunAttachment, RayGunEvents, RayGunGroupConversation, RayGunStream};
+use warp::warp::dummy::Dummy;
+use warp::warp::Warp;
+use warp::{
+    crypto::DID,
+    raygun::{self, Location, LocationKind, RayGun},
+};
+use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
 use wasm_bindgen::prelude::*;
 
 use super::constellation::Progression;
@@ -18,11 +20,13 @@ use super::constellation::Progression;
 #[derive(Clone)]
 #[wasm_bindgen]
 pub struct RayGunBox {
-    inner: Box<dyn RayGun>,
+    inner: Warp<Dummy, WarpIpfs, Dummy>,
 }
 impl RayGunBox {
-    pub fn new(raygun: Box<dyn RayGun>) -> Self {
-        Self { inner: raygun }
+    pub fn new(instance: &WarpIpfsInstance) -> Self {
+        Self {
+            inner: instance.clone().split_raygun(),
+        }
     }
 }
 
@@ -42,14 +46,18 @@ impl RayGunBox {
         &mut self,
         name: Option<String>,
         recipients: Vec<String>,
-        settings: GroupSettings,
+        permissions: GroupPermissions,
     ) -> Result<Conversation, JsError> {
         let recipients = recipients
             .iter()
             .map(|did| DID::from_str(did).unwrap())
             .collect();
         self.inner
-            .create_group_conversation(name, recipients, settings.into())
+            .create_group_conversation::<warp::raygun::GroupPermissions>(
+                name,
+                recipients,
+                permissions.into(),
+            )
             .await
             .map_err(|e| e.into())
             .map(|ok| Conversation::new(ok))
@@ -121,7 +129,7 @@ impl RayGunBox {
             )
             .await
             .map_err(|e| e.into())
-            .map(|ok|ok.into())
+            .map(|ok| ok.into())
     }
 
     /// Retrieve all message references from a conversation
@@ -281,16 +289,16 @@ impl RayGunBox {
             .map_err(|e| e.into())
     }
 
-    /// Update conversation settings
-    pub async fn update_conversation_settings(
+    /// Update conversation permissions
+    pub async fn update_conversation_permissions(
         &mut self,
         conversation_id: String,
-        settings: JsValue,
+        permissions: GroupPermissions,
     ) -> Result<(), JsError> {
         self.inner
-            .update_conversation_settings(
+            .update_conversation_permissions::<warp::raygun::GroupPermissions>(
                 Uuid::from_str(&conversation_id).unwrap(),
-                serde_wasm_bindgen::from_value(settings).unwrap(),
+                permissions.into(),
             )
             .await
             .map_err(|e| e.into())
@@ -502,8 +510,8 @@ impl Conversation {
     pub fn modified(&self) -> js_sys::Date {
         self.inner.modified().into()
     }
-    pub fn settings(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.settings()).unwrap()
+    pub fn permissions(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.inner.permissions()).unwrap()
     }
     pub fn recipients(&self) -> Vec<String> {
         self.inner
@@ -924,40 +932,66 @@ impl From<warp::raygun::MessageType> for MessageType {
 }
 
 #[wasm_bindgen]
-pub struct GroupSettings(warp::raygun::GroupSettings);
+pub enum GroupPermission {
+    AddParticipants,
+    SetGroupName,
+}
 
-#[wasm_bindgen]
-impl GroupSettings {
-    #[wasm_bindgen(constructor)]
-    pub fn new() -> Self {
-        Self(warp::raygun::GroupSettings::new())
+impl From<GroupPermission> for warp::raygun::GroupPermission {
+    fn from(value: GroupPermission) -> Self {
+        match value {
+            GroupPermission::AddParticipants => warp::raygun::GroupPermission::AddParticipants,
+            GroupPermission::SetGroupName => warp::raygun::GroupPermission::SetGroupName,
+        }
     }
-
-    pub fn members_can_add_participants(&self) -> bool {
-        self.0.members_can_add_participants()
-    }
-
-    pub fn members_can_change_name(&self) -> bool {
-        self.0.members_can_change_name()
-    }
-
-    pub fn set_members_can_add_participants(&mut self, val: bool) {
-        self.0.set_members_can_add_participants(val);
-    }
-
-    pub fn set_members_can_change_name(&mut self, val: bool) {
-        self.0.set_members_can_change_name(val);
+}
+impl From<warp::raygun::GroupPermission> for GroupPermission {
+    fn from(value: warp::raygun::GroupPermission) -> Self {
+        match value {
+            warp::raygun::GroupPermission::AddParticipants => GroupPermission::AddParticipants,
+            warp::raygun::GroupPermission::SetGroupName => GroupPermission::SetGroupName,
+        }
     }
 }
 
-impl From<GroupSettings> for warp::raygun::GroupSettings {
-    fn from(value: GroupSettings) -> Self {
+#[wasm_bindgen]
+pub struct GroupPermissions(warp::raygun::GroupPermissions);
+
+#[wasm_bindgen]
+impl GroupPermissions {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self(warp::raygun::GroupPermissions::new())
+    }
+
+    pub fn set_permissions(
+        &mut self,
+        did: String,
+        permissions: Vec<GroupPermission>,
+    ) -> Result<(), JsError> {
+        let did = DID::from_str(&did)?;
+        let permissions: IndexSet<warp::raygun::GroupPermission> =
+            permissions.into_iter().map(|p| p.into()).collect();
+        self.0.insert(did, permissions);
+        Ok(())
+    }
+    pub fn get_permissions(&self, did: String) -> Result<Option<Vec<GroupPermission>>, JsError> {
+        let result = self.0.get(&DID::from_str(&did)?);
+        let result: Option<Vec<GroupPermission>> =
+            result.map(|s| s.into_iter().map(|p| (*p).into()).collect());
+        Ok(result)
+    }
+    pub fn remove_permissions(&mut self, did: String) -> Result<(), JsError> {
+        self.0.swap_remove(&DID::from_str(&did)?);
+        Ok(())
+    }
+}
+
+impl From<GroupPermissions> for warp::raygun::GroupPermissions {
+    fn from(value: GroupPermissions) -> Self {
         value.0
     }
 }
-
-#[wasm_bindgen]
-pub struct DirectConversationSettings(warp::raygun::DirectConversationSettings);
 
 // #[wasm_bindgen]
 // pub struct ConversationImage(warp::raygun::ConversationImage);

@@ -1,4 +1,3 @@
-
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -11,11 +10,12 @@ impl WarpIpfs {
         config: Config,
         tesseract: Option<crate::warp::tesseract::Tesseract>,
     ) -> crate::warp::WarpInstance {
-        let warp_ipfs = warp_ipfs::WarpIpfs::new(config.0, tesseract.map(|t| t.into())).await;
-        let mp = Box::new(warp_ipfs.clone()) as Box<_>;
-        let rg = Box::new(warp_ipfs.clone()) as Box<_>;
-        let fs = Box::new(warp_ipfs.clone()) as Box<_>;
-        crate::warp::WarpInstance::new(mp, rg, fs)
+        let mut builder = warp_ipfs::WarpIpfsBuilder::default().set_config(config.0);
+        if let Some(tesseract) = tesseract {
+            builder = builder.set_tesseract(tesseract.into());
+        }
+        let instance = builder.await;
+        crate::warp::WarpInstance::new(instance)
     }
 }
 

@@ -1,10 +1,7 @@
-use warp::constellation::Constellation;
-use warp::multipass::MultiPass;
-use warp::raygun::RayGun;
-
 use constellation::ConstellationBox;
 use multipass::MultiPassBox;
 use raygun::RayGunBox;
+use warp_ipfs::WarpIpfsInstance;
 
 use wasm_bindgen::prelude::*;
 
@@ -32,10 +29,10 @@ pub struct WarpInstance {
 }
 
 impl WarpInstance {
-    pub fn new(mp: Box<dyn MultiPass>, rg: Box<dyn RayGun>, fs: Box<dyn Constellation>) -> Self {
-        let multipass = MultiPassBox::new(mp);
-        let raygun = RayGunBox::new(rg);
-        let constellation = ConstellationBox::new(fs);
+    pub fn new(instance: WarpIpfsInstance) -> Self {
+        let multipass = MultiPassBox::new(&instance);
+        let raygun = RayGunBox::new(&instance);
+        let constellation = ConstellationBox::new(&instance);
 
         Self {
             multipass,
