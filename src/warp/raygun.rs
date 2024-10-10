@@ -53,10 +53,10 @@ impl RayGunBox {
             .map(|did| DID::from_str(did).unwrap())
             .collect();
         self.inner
-            .create_group_conversation::<warp::raygun::GroupPermissions>(
+            .create_group_conversation(
                 name,
                 recipients,
-                permissions.into(),
+                warp::raygun::GroupPermissions::from(permissions),
             )
             .await
             .map_err(|e| e.into())
