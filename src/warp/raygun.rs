@@ -5,7 +5,7 @@ use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use uuid::Uuid;
-use warp::raygun::{RayGunAttachment, RayGunEvents, RayGunGroupConversation, RayGunStream};
+use warp::raygun::{GroupPermissionOpt, RayGunAttachment, RayGunEvents, RayGunGroupConversation, RayGunStream};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp::{
@@ -56,7 +56,7 @@ impl RayGunBox {
             .create_group_conversation(
                 name,
                 recipients,
-                warp::raygun::GroupPermissions::from(permissions),
+                GroupPermissionOpt::Map(warp::raygun::GroupPermissions::from(permissions)),
             )
             .await
             .map_err(|e| e.into())
@@ -296,9 +296,9 @@ impl RayGunBox {
         permissions: GroupPermissions,
     ) -> Result<(), JsError> {
         self.inner
-            .update_conversation_permissions::<warp::raygun::GroupPermissions>(
+            .update_conversation_permissions(
                 Uuid::from_str(&conversation_id).unwrap(),
-                permissions.into(),
+                GroupPermissionOpt::Map(warp::raygun::GroupPermissions::from(permissions)),
             )
             .await
             .map_err(|e| e.into())
@@ -510,8 +510,8 @@ impl Conversation {
     pub fn modified(&self) -> js_sys::Date {
         self.inner.modified().into()
     }
-    pub fn permissions(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.permissions()).unwrap()
+    pub fn permissions(&self) -> GroupPermissions {
+        GroupPermissions(self.inner.permissions())
     }
     pub fn recipients(&self) -> Vec<String> {
         self.inner
