@@ -5,7 +5,7 @@ use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use uuid::Uuid;
-use warp::raygun::{GroupPermissionOpt, RayGunAttachment, RayGunEvents, RayGunGroupConversation, RayGunStream};
+use warp::raygun::{ConversationImage, GroupPermissionOpt, RayGunAttachment, RayGunConversationInformation, RayGunEvents, RayGunGroupConversation, RayGunStream};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp::{
@@ -27,6 +27,21 @@ impl RayGunBox {
         Self {
             inner: instance.clone().split_raygun(),
         }
+    }
+}
+
+/// impl RayGun trait
+#[wasm_bindgen]
+impl RayGunBox {
+
+    async fn set_conversation_description(
+        &mut self,
+        conversation_id: Uuid,
+        description: Option<&str>,
+    ) -> Result<(), JsError> {
+        self.inner
+            .set_conversation_description(conversation_id, description)
+            .await.map_err(|e| e.into())
     }
 }
 
@@ -302,6 +317,52 @@ impl RayGunBox {
             )
             .await
             .map_err(|e| e.into())
+    }
+
+    async fn conversation_icon(&self, conversation_id: Uuid) -> Result<ConversationImage, JsError> {
+        self.inner.conversation_icon(conversation_id).await.map_err(|e| e.into())
+    }
+
+    async fn conversation_banner(&self, conversation_id: Uuid) -> Result<ConversationImage, JsError> {
+        self.inner.conversation_banner(conversation_id).await.map_err(|e| e.into())
+    }
+
+    async fn update_conversation_icon(
+        &mut self,
+        conversation_id: Uuid,
+        file: AttachmentFile,
+    ) -> Result<(), JsError> {
+        self.inner
+            .update_conversation_icon(conversation_id, file.into())
+            .await.map_err(|e| e.into())
+    }
+
+    async fn update_conversation_banner(
+        &mut self,
+        conversation_id: Uuid,
+        file: AttachmentFile,
+    ) -> Result<(), JsError> {
+        self.inner
+            .update_conversation_banner(conversation_id, file.into())
+            .await.map_err(|e| e.into())
+    }
+
+    async fn remove_conversation_icon(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
+        self.inner.remove_conversation_icon(conversation_id).await.map_err(|e| e.into())
+    }
+
+    async fn remove_conversation_banner(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
+        self.inner
+            .remove_conversation_banner(conversation_id)
+            .await.map_err(|e| e.into())
+    }
+
+    async fn archived_conversation(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
+        self.inner.archived_conversation(conversation_id).await.map_err(|e| e.into())
+    }
+
+    async fn unarchived_conversation(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
+        self.inner.unarchived_conversation(conversation_id).await.map_err(|e| e.into())
     }
 }
 
