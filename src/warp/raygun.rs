@@ -5,7 +5,10 @@ use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use uuid::Uuid;
-use warp::raygun::{ConversationImage, GroupPermissionOpt, RayGunAttachment, RayGunConversationInformation, RayGunEvents, RayGunGroupConversation, RayGunStream};
+use warp::raygun::{
+    GroupPermissionOpt, RayGunAttachment, RayGunConversationInformation, RayGunEvents,
+    RayGunGroupConversation, RayGunStream,
+};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp::{
@@ -33,15 +36,18 @@ impl RayGunBox {
 /// impl RayGun trait
 #[wasm_bindgen]
 impl RayGunBox {
-
-    async fn set_conversation_description(
+    pub async fn set_conversation_description(
         &mut self,
-        conversation_id: Uuid,
-        description: Option<&str>,
+        conversation_id: String,
+        description: Option<String>,
     ) -> Result<(), JsError> {
         self.inner
-            .set_conversation_description(conversation_id, description)
-            .await.map_err(|e| e.into())
+            .set_conversation_description(
+                Uuid::from_str(&conversation_id).unwrap(),
+                description.as_deref(),
+            )
+            .await
+            .map_err(|e| e.into())
     }
 }
 
@@ -319,50 +325,85 @@ impl RayGunBox {
             .map_err(|e| e.into())
     }
 
-    async fn conversation_icon(&self, conversation_id: Uuid) -> Result<ConversationImage, JsError> {
-        self.inner.conversation_icon(conversation_id).await.map_err(|e| e.into())
+    pub async fn conversation_icon(
+        &self,
+        conversation_id: String,
+    ) -> Result<ConversationImage, JsError> {
+        self.inner
+            .conversation_icon(Uuid::from_str(&conversation_id).unwrap())
+            .await
+            .map(|img| ConversationImage(img))
+            .map_err(|e| e.into())
     }
 
-    async fn conversation_banner(&self, conversation_id: Uuid) -> Result<ConversationImage, JsError> {
-        self.inner.conversation_banner(conversation_id).await.map_err(|e| e.into())
+    pub async fn conversation_banner(
+        &self,
+        conversation_id: String,
+    ) -> Result<ConversationImage, JsError> {
+        self.inner
+            .conversation_banner(Uuid::from_str(&conversation_id).unwrap())
+            .await
+            .map(|img| ConversationImage(img))
+            .map_err(|e| e.into())
     }
 
-    async fn update_conversation_icon(
+    pub async fn update_conversation_icon(
         &mut self,
-        conversation_id: Uuid,
+        conversation_id: String,
         file: AttachmentFile,
     ) -> Result<(), JsError> {
         self.inner
-            .update_conversation_icon(conversation_id, file.into())
-            .await.map_err(|e| e.into())
+            .update_conversation_icon(Uuid::from_str(&conversation_id).unwrap(), file.into())
+            .await
+            .map_err(|e| e.into())
     }
 
-    async fn update_conversation_banner(
+    pub async fn update_conversation_banner(
         &mut self,
-        conversation_id: Uuid,
+        conversation_id: String,
         file: AttachmentFile,
     ) -> Result<(), JsError> {
         self.inner
-            .update_conversation_banner(conversation_id, file.into())
-            .await.map_err(|e| e.into())
+            .update_conversation_banner(Uuid::from_str(&conversation_id).unwrap(), file.into())
+            .await
+            .map_err(|e| e.into())
     }
 
-    async fn remove_conversation_icon(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
-        self.inner.remove_conversation_icon(conversation_id).await.map_err(|e| e.into())
-    }
-
-    async fn remove_conversation_banner(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
+    pub async fn remove_conversation_icon(
+        &mut self,
+        conversation_id: String,
+    ) -> Result<(), JsError> {
         self.inner
-            .remove_conversation_banner(conversation_id)
-            .await.map_err(|e| e.into())
+            .remove_conversation_icon(Uuid::from_str(&conversation_id).unwrap())
+            .await
+            .map_err(|e| e.into())
     }
 
-    async fn archived_conversation(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
-        self.inner.archived_conversation(conversation_id).await.map_err(|e| e.into())
+    pub async fn remove_conversation_banner(
+        &mut self,
+        conversation_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .remove_conversation_banner(Uuid::from_str(&conversation_id).unwrap())
+            .await
+            .map_err(|e| e.into())
     }
 
-    async fn unarchived_conversation(&mut self, conversation_id: Uuid) -> Result<(), JsError> {
-        self.inner.unarchived_conversation(conversation_id).await.map_err(|e| e.into())
+    pub async fn archived_conversation(&mut self, conversation_id: String) -> Result<(), JsError> {
+        self.inner
+            .archived_conversation(Uuid::from_str(&conversation_id).unwrap())
+            .await
+            .map_err(|e| e.into())
+    }
+
+    pub async fn unarchived_conversation(
+        &mut self,
+        conversation_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .unarchived_conversation(Uuid::from_str(&conversation_id).unwrap())
+            .await
+            .map_err(|e| e.into())
     }
 }
 
@@ -571,6 +612,12 @@ impl Conversation {
     pub fn modified(&self) -> js_sys::Date {
         self.inner.modified().into()
     }
+    pub fn favorite(&self) -> bool {
+        self.inner.favorite()
+    }
+    pub fn conversation_type(&self) -> ConversationType {
+        self.inner.conversation_type().into()
+    }
     pub fn permissions(&self) -> GroupPermissions {
         GroupPermissions(self.inner.permissions())
     }
@@ -580,6 +627,9 @@ impl Conversation {
             .iter()
             .map(|did| did.to_string())
             .collect()
+    }
+    pub fn archived(&self) -> bool {
+        self.inner.archived()
     }
 }
 
@@ -993,6 +1043,22 @@ impl From<warp::raygun::MessageType> for MessageType {
 }
 
 #[wasm_bindgen]
+#[derive(Copy, Clone)]
+pub enum ConversationType {
+    Direct,
+    Group,
+}
+
+impl From<warp::raygun::ConversationType> for ConversationType {
+    fn from(value: warp::raygun::ConversationType) -> Self {
+        match value {
+            raygun::ConversationType::Direct => ConversationType::Direct,
+            raygun::ConversationType::Group => ConversationType::Group,
+        }
+    }
+}
+
+#[wasm_bindgen]
 pub enum GroupPermission {
     AddParticipants,
     SetGroupName,
@@ -1054,8 +1120,18 @@ impl From<GroupPermissions> for warp::raygun::GroupPermissions {
     }
 }
 
-// #[wasm_bindgen]
-// pub struct ConversationImage(warp::raygun::ConversationImage);
+#[wasm_bindgen]
+pub struct ConversationImage(warp::raygun::ConversationImage);
+
+impl ConversationImage {
+    pub fn data(&self) -> &[u8] {
+        &self.0.data()
+    }
+
+    pub fn image_type(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.0.image_type()).unwrap()
+    }
+}
 
 #[wasm_bindgen]
 pub enum MessageEvent {
