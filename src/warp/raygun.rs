@@ -571,6 +571,12 @@ impl Conversation {
     pub fn modified(&self) -> js_sys::Date {
         self.inner.modified().into()
     }
+    pub fn favorite(&self) -> bool {
+        self.inner.favorite()
+    }
+    pub fn conversation_type(&self) -> ConversationType {
+        self.inner.conversation_type().into()
+    }
     pub fn permissions(&self) -> GroupPermissions {
         GroupPermissions(self.inner.permissions())
     }
@@ -580,6 +586,9 @@ impl Conversation {
             .iter()
             .map(|did| did.to_string())
             .collect()
+    }
+    pub fn archived(&self) -> bool {
+        self.inner.archived()
     }
 }
 
@@ -988,6 +997,22 @@ impl From<warp::raygun::MessageType> for MessageType {
             warp::raygun::MessageType::Message => MessageType::Message,
             warp::raygun::MessageType::Attachment => MessageType::Attachment,
             warp::raygun::MessageType::Event => MessageType::Event,
+        }
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Copy, Clone)]
+pub enum ConversationType {
+    Direct,
+    Group,
+}
+
+impl From<warp::raygun::ConversationType> for ConversationType {
+    fn from(value: warp::raygun::ConversationType) -> Self {
+        match value {
+            raygun::ConversationType::Direct => ConversationType::Direct,
+            raygun::ConversationType::Group => ConversationType::Group,
         }
     }
 }
