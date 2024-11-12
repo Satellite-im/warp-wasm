@@ -5,7 +5,10 @@ use js_sys::{Array, Map, Uint8Array};
 use std::str::FromStr;
 use warp::error::Error;
 use warp::multipass::identity::ShortId;
-use warp::multipass::{Friends, IdentityInformation, LocalIdentity, MultiPassEvent};
+use warp::multipass::{
+    Friends, IdentityImportOption, IdentityInformation, LocalIdentity, MultiPassEvent,
+    MultiPassImportExport,
+};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp::{
@@ -102,6 +105,34 @@ impl MultiPassBox {
                     s.map(|t| Into::<MultiPassEventKind>::into(t).into()),
                 ))
             })
+    }
+}
+
+/// impl MultiPassImportExport trait
+#[wasm_bindgen]
+impl MultiPassBox {
+    /// Import identity from a specific location
+    pub async fn import_identity(
+        &mut self,
+        location: ImportLocation,
+        passphrase: String,
+    ) -> Result<Identity, JsError> {
+        self.inner
+            .import_identity(IdentityImportOption::Locate {
+                location: location.into(),
+                passphrase,
+            })
+            .await
+            .map_err(|e| e.into())
+            .map(|i| i.into())
+    }
+
+    /// Manually export identity to a specific location
+    pub async fn export_identity(&mut self, location: ImportLocation) -> Result<(), JsError> {
+        self.inner
+            .export_identity(location.into())
+            .await
+            .map_err(|e| e.into())
     }
 }
 
@@ -711,6 +742,53 @@ impl From<IdentityStatus> for warp::multipass::identity::IdentityStatus {
             IdentityStatus::Away => identity::IdentityStatus::Away,
             IdentityStatus::Busy => identity::IdentityStatus::Busy,
             IdentityStatus::Offline => identity::IdentityStatus::Offline,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+#[wasm_bindgen]
+pub enum ImportLocationType {
+    /// Remote location where the identity is stored
+    Remote,
+
+    /// Local path where the identity is stored
+    Local,
+}
+
+#[wasm_bindgen]
+pub struct ImportLocation {
+    pub import_type: ImportLocationType,
+    path: Option<String>,
+}
+
+#[wasm_bindgen]
+impl ImportLocation {
+    #[wasm_bindgen(constructor)]
+    pub fn new(path: Option<String>) -> ImportLocation {
+        Self {
+            import_type: if path.is_some() {
+                ImportLocationType::Remote
+            } else {
+                ImportLocationType::Local
+            },
+            path,
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn path(&self) -> Option<String> {
+        self.path.clone()
+    }
+}
+
+impl From<ImportLocation> for warp::multipass::ImportLocation<'_> {
+    fn from(value: ImportLocation) -> Self {
+        match value.import_type {
+            ImportLocationType::Remote => multipass::ImportLocation::Remote,
+            ImportLocationType::Local => multipass::ImportLocation::Local {
+                path: value.path.map(|s| s.into()).unwrap_or_default(),
+            },
         }
     }
 }
