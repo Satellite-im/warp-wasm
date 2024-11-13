@@ -3,6 +3,7 @@ use futures::StreamExt;
 use indexmap::IndexSet;
 use js_sys::Promise;
 use serde::{Deserialize, Serialize};
+use tsify_next::Tsify;
 use std::str::FromStr;
 use uuid::Uuid;
 use warp::raygun::{
@@ -18,7 +19,8 @@ use warp::{
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
 use wasm_bindgen::prelude::*;
 
-use super::constellation::Progression;
+use super::constellation::{File, FileType, Progression};
+use super::multipass::MetaData;
 
 #[derive(Clone)]
 #[wasm_bindgen]
@@ -638,6 +640,7 @@ pub struct Messages {
     variant: MessagesEnum,
     value: JsValue,
 }
+
 #[wasm_bindgen]
 impl Messages {
     fn new(messages: raygun::Messages) -> Self {
@@ -710,18 +713,24 @@ impl MessageOptions {
         }
     }
 
-    pub fn set_date_range(&mut self, range: JsValue) {
+    pub fn set_date_range(&mut self, start: js_sys::Date, end: js_sys::Date) {
         self.inner = self
             .inner
             .clone()
-            .set_date_range(serde_wasm_bindgen::from_value(range).unwrap());
+            .set_date_range(core::ops::Range {
+                start: start.into(),
+                end: end.into()
+            });
     }
 
-    pub fn set_range(&mut self, range: JsValue) {
+    pub fn set_range(&mut self, start: usize, end: usize) {
         self.inner = self
             .inner
             .clone()
-            .set_range(serde_wasm_bindgen::from_value(range).unwrap());
+            .set_range(core::ops::Range {
+                start,
+                end
+            });
     }
 
     pub fn set_limit(&mut self, limit: u8) {
@@ -752,11 +761,11 @@ impl MessageOptions {
         self.inner = self.inner.clone().set_reverse();
     }
 
-    pub fn set_messages_type(&mut self, ty: JsValue) {
+    pub fn set_messages_type(&mut self, ty: MessagesType) {
         self.inner = self
             .inner
             .clone()
-            .set_messages_type(serde_wasm_bindgen::from_value(ty).unwrap());
+            .set_messages_type(ty.into());
     }
 }
 
@@ -803,10 +812,10 @@ impl MessageReference {
     }
 }
 
-// Convert a JS object of raygun::Message to a Message
 #[wasm_bindgen]
-pub fn message_from(js: JsValue) -> Message {
-    Message::new(serde_wasm_bindgen::from_value(js).unwrap())
+extern "C" {
+    #[wasm_bindgen(typescript_type = "Map<string, string[]>")]
+    pub type ReactionMap;
 }
 
 #[wasm_bindgen]
@@ -848,8 +857,8 @@ impl Message {
         self.inner.pinned()
     }
 
-    pub fn reactions(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.reactions()).unwrap()
+    pub fn reactions(&self) -> ReactionMap {
+        ReactionMap::from(serde_wasm_bindgen::to_value(&self.inner.reactions()).unwrap())
     }
 
     pub fn mentions(&self) -> Vec<String> {
@@ -864,16 +873,16 @@ impl Message {
         self.inner.lines()
     }
 
-    pub fn attachments(&self) -> Vec<JsValue> {
+    pub fn attachments(&self) -> Vec<File> {
         self.inner
             .attachments()
             .iter()
-            .filter_map(|v| serde_wasm_bindgen::to_value(v).ok())
+            .map(|v| File::from_file(v.clone()))
             .collect()
     }
 
-    pub fn metadata(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.metadata()).unwrap()
+    pub fn metadata(&self) -> MetaData {
+        MetaData::from(serde_wasm_bindgen::to_value(&self.inner.metadata()).unwrap())
     }
 
     pub fn replied(&self) -> Option<String> {
@@ -1059,6 +1068,13 @@ impl From<warp::raygun::ConversationType> for ConversationType {
 }
 
 #[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = "GroupPermission[]")]
+    pub type GroupPermissionList;
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[wasm_bindgen]
 pub enum GroupPermission {
     AddParticipants,
     SetGroupName,
@@ -1128,8 +1144,8 @@ impl ConversationImage {
         &self.0.data()
     }
 
-    pub fn image_type(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.0.image_type()).unwrap()
+    pub fn image_type(&self) -> FileType {
+        self.0.image_type().into()
     }
 }
 
@@ -1142,6 +1158,32 @@ impl From<MessageEvent> for warp::raygun::MessageEvent {
     fn from(value: MessageEvent) -> Self {
         match value {
             MessageEvent::Typing => raygun::MessageEvent::Typing,
+        }
+    }
+}
+
+#[derive(Tsify, Deserialize, Serialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum MessagesType {
+    /// Stream type
+    Stream,
+    /// List type
+    List,
+    /// Page type
+    Pages {
+        /// Page to select
+        page: Option<usize>,
+        /// Amount of messages per page
+        amount_per_page: Option<usize>,
+    },
+}
+
+impl Into<raygun::MessagesType> for MessagesType {
+    fn into(self) -> raygun::MessagesType {
+        match self {
+            MessagesType::Stream => raygun::MessagesType::Stream,
+            MessagesType::List => raygun::MessagesType::List,
+            MessagesType::Pages{page, amount_per_page} => raygun::MessagesType::Pages{page, amount_per_page},
         }
     }
 }

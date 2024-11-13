@@ -311,6 +311,15 @@ impl Directory {
 pub struct File {
     inner: constellation::file::File,
 }
+
+impl File {
+    pub fn from_file(inner: constellation::file::File) -> File {
+        File {
+            inner,
+        }
+    }
+}
+
 #[wasm_bindgen]
 impl File {
     pub fn new(name: &str) -> File {
