@@ -1,5 +1,7 @@
 use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
+use serde::{Deserialize, Serialize};
+use tsify_next::Tsify;
 use uuid::Uuid;
 use warp::constellation::{self, Constellation};
 use warp::warp::dummy::Dummy;
@@ -78,12 +80,12 @@ impl ConstellationBox {
             .map_err(|e| e.into())
     }
 
-    pub async fn get_buffer(&self, name: &str) -> Result<JsValue, JsError> {
+    pub async fn get_buffer(&self, name: &str) -> Result<Vec<u8>, JsError> {
         self.inner
             .get_buffer(name)
             .await
             .map_err(|e| e.into())
-            .map(|ok| serde_wasm_bindgen::to_value(&ok).unwrap())
+            .map(|ok| ok.to_vec())
     }
 
     pub async fn put_stream(
@@ -246,12 +248,14 @@ impl Directory {
     pub fn set_name(&self, name: &str) {
         self.inner.set_name(name)
     }
-    pub fn set_thumbnail_format(&self, format: JsValue) {
+    pub fn set_thumbnail_format(&self, format: FileType) {
+        let format: warp::constellation::file::FileType = format.into();
         self.inner
-            .set_thumbnail_format(serde_wasm_bindgen::from_value(format).unwrap())
+            .set_thumbnail_format(format.into())
     }
-    pub fn thumbnail_format(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.thumbnail_format()).unwrap()
+    pub fn thumbnail_format(&self) -> FileType {
+        let format: warp::constellation::file::FileType = self.inner.thumbnail_format().into();
+        format.into()
     }
     pub fn set_thumbnail(&self, desc: &[u8]) {
         self.inner.set_thumbnail(desc.to_vec())
@@ -330,12 +334,14 @@ impl File {
     pub fn set_description(&self, desc: &str) {
         self.inner.set_description(desc)
     }
-    pub fn set_thumbnail_format(&self, format: JsValue) {
+    pub fn set_thumbnail_format(&self, format: FileType) {
+        let format: warp::constellation::file::FileType = format.into();
         self.inner
-            .set_thumbnail_format(serde_wasm_bindgen::from_value(format).unwrap())
+            .set_thumbnail_format(format.into())
     }
-    pub fn thumbnail_format(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.thumbnail_format()).unwrap()
+    pub fn thumbnail_format(&self) -> FileType {
+        let format: warp::constellation::file::FileType = self.inner.thumbnail_format().into();
+        format.into()
     }
     pub fn set_thumbnail(&self, data: &[u8]) {
         self.inner.set_thumbnail(data.to_vec())
@@ -379,12 +385,12 @@ impl File {
     pub fn set_hash(&self, hash: Hash) {
         self.inner.set_hash(hash.into())
     }
-    pub fn set_file_type(&self, file_type: JsValue) {
+    pub fn set_file_type(&self, file_type: FileType) {
         self.inner
-            .set_file_type(serde_wasm_bindgen::from_value(file_type).unwrap())
+            .set_file_type(file_type.into())
     }
-    pub fn file_type(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.file_type()).unwrap()
+    pub fn file_type(&self) -> FileType {
+        self.inner.file_type().into()
     }
     pub fn path(&self) -> String {
         self.inner.path().to_string()
@@ -454,8 +460,9 @@ impl Item {
     pub fn size(&self) -> usize {
         self.inner.size()
     }
-    pub fn thumbnail_format(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner.thumbnail_format()).unwrap()
+    pub fn thumbnail_format(&self) -> FileType {
+        let format: warp::constellation::file::FileType = self.inner.thumbnail_format().into();
+        format.into()
     }
     pub fn thumbnail(&self) -> Vec<u8> {
         self.inner.thumbnail()
@@ -484,9 +491,10 @@ impl Item {
     pub fn set_thumbnail(&self, data: &[u8]) {
         self.inner.set_thumbnail(data.to_vec())
     }
-    pub fn set_thumbnail_format(&self, format: JsValue) {
+    pub fn set_thumbnail_format(&self, format: FileType) {
+        let format: warp::constellation::file::FileType = format.into();
         self.inner
-            .set_thumbnail_format(serde_wasm_bindgen::from_value(format).unwrap())
+            .set_thumbnail_format(format.into())
     }
     pub fn set_size(&self, size: usize) -> Result<(), JsError> {
         self.inner.set_size(size).map_err(|e| e.into())
@@ -616,5 +624,39 @@ impl From<warp::constellation::file::Hash> for Hash {
 impl From<Hash> for warp::constellation::file::Hash {
     fn from(value: Hash) -> Self {
         value.0
+    }
+}
+
+#[derive(Tsify, Deserialize, Serialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum FileType {
+    Generic,
+    Mime(String),
+}
+
+impl From<&constellation::file::FileType> for FileType {
+    fn from(value: &constellation::file::FileType) -> Self {
+        match value {
+            constellation::file::FileType::Generic => FileType::Generic,
+            constellation::file::FileType::Mime(media_type_buf) => FileType::Mime(media_type_buf.to_string()),
+        }
+    }
+}
+
+impl From<constellation::file::FileType> for FileType {
+    fn from(value: constellation::file::FileType) -> Self {
+        match value {
+            constellation::file::FileType::Generic => FileType::Generic,
+            constellation::file::FileType::Mime(media_type_buf) => FileType::Mime(media_type_buf.to_string()),
+        }
+    }
+}
+
+impl Into<constellation::file::FileType> for FileType {
+    fn into(self) -> constellation::file::FileType {
+        match self {
+            FileType::Generic => constellation::file::FileType::Generic,
+            FileType::Mime(media_type_buf) => constellation::file::FileType::Mime(media_type_buf.parse().unwrap()),
+        }
     }
 }

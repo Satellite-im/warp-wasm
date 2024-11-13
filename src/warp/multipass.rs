@@ -1,8 +1,10 @@
 use crate::warp::stream::AsyncIterator;
 use futures::StreamExt;
 use indexmap::IndexMap;
-use js_sys::{Array, Map, Uint8Array};
+use js_sys::Map;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
+use tsify_next::Tsify;
 use warp::error::Error;
 use warp::multipass::identity::ShortId;
 use warp::multipass::{Friends, IdentityInformation, LocalIdentity, MultiPassEvent};
@@ -18,6 +20,8 @@ use warp::{
 };
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
 use wasm_bindgen::prelude::*;
+
+use super::constellation::FileType;
 
 #[derive(Clone)]
 #[wasm_bindgen]
@@ -47,12 +51,8 @@ impl MultiPassBox {
             .map(|i| i.into())
     }
 
-    pub async fn get_identity(
-        &self,
-        id_variant: Identifier,
-        id_value: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let id = to_identifier_enum(id_variant, id_value)?;
+    pub async fn get_identity(&self, identifier: Identifier) -> Result<Vec<Identity>, JsError> {
+        let id = identifier.into();
         let single_id = matches!(id, warp::multipass::identity::Identifier::DID(_));
         let list = self
             .inner
@@ -61,7 +61,7 @@ impl MultiPassBox {
             .await;
         match (single_id, list.is_empty()) {
             (true, true) => Err(Error::IdentityDoesntExist.into()),
-            (_, false) | (_, true) => Ok(serde_wasm_bindgen::to_value(&list).unwrap()),
+            (_, false) | (_, true) => Ok(list.into_iter().map(|i| i.into()).collect()),
         }
     }
 
@@ -77,13 +77,9 @@ impl MultiPassBox {
         self.inner.tesseract().into()
     }
 
-    pub async fn update_identity(
-        &mut self,
-        option: IdentityUpdate,
-        value: JsValue,
-    ) -> Result<(), JsError> {
+    pub async fn update_identity(&mut self, update: IdentityUpdate) -> Result<(), JsError> {
         self.inner
-            .update_identity(to_identity_update_enum(option, value)?)
+            .update_identity(update.into())
             .await
             .map_err(|e| e.into())
     }
@@ -149,12 +145,12 @@ impl MultiPassBox {
     }
 
     /// List the incoming friend request
-    pub async fn list_incoming_request(&self) -> Result<JsValue, JsError> {
+    pub async fn list_incoming_request(&self) -> Result<Vec<FriendRequest>, JsError> {
         self.inner
             .list_incoming_request()
             .await
             .map_err(|e| e.into())
-            .map(|ok| serde_wasm_bindgen::to_value(&ok).unwrap())
+            .map(|ok| ok.into_iter().map(|r|r.into()).collect())
     }
 
     /// Check to determine if a request been sent to the DID
@@ -166,12 +162,12 @@ impl MultiPassBox {
     }
 
     /// List the outgoing friend request
-    pub async fn list_outgoing_request(&self) -> Result<JsValue, JsError> {
+    pub async fn list_outgoing_request(&self) -> Result<Vec<FriendRequest>, JsError> {
         self.inner
             .list_outgoing_request()
             .await
             .map_err(|e| e.into())
-            .map(|ok| serde_wasm_bindgen::to_value(&ok).unwrap())
+            .map(|ok| ok.into_iter().map(|r|r.into()).collect())
     }
 
     /// Remove friend from contacts
@@ -199,17 +195,12 @@ impl MultiPassBox {
     }
 
     /// List block list
-    pub async fn block_list(&self) -> Result<JsValue, JsError> {
+    pub async fn block_list(&self) -> Result<Vec<String>, JsError> {
         self.inner
             .block_list()
             .await
             .map_err(|e| e.into())
-            .map(|ok| {
-                serde_wasm_bindgen::to_value(
-                    &ok.iter().map(|i| i.to_string()).collect::<Vec<String>>(),
-                )
-                .unwrap()
-            })
+            .map(|ok| ok.iter().map(|i| i.to_string()).collect::<Vec<String>>())
     }
 
     /// Check to see if public key is blocked
@@ -221,17 +212,12 @@ impl MultiPassBox {
     }
 
     /// List all friends public key
-    pub async fn list_friends(&self) -> Result<JsValue, JsError> {
+    pub async fn list_friends(&self) -> Result<Vec<String>, JsError> {
         self.inner
             .list_friends()
             .await
             .map_err(|e| e.into())
-            .map(|ok| {
-                serde_wasm_bindgen::to_value(
-                    &ok.iter().map(|i| i.to_string()).collect::<Vec<String>>(),
-                )
-                .unwrap()
-            })
+            .map(|ok| ok.iter().map(|i| i.to_string()).collect::<Vec<String>>())
     }
 
     /// Check to see if public key is friend of the account
@@ -300,130 +286,114 @@ impl MultiPassBox {
     }
 }
 
-#[wasm_bindgen]
+#[derive(Tsify, Deserialize, Serialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum IdentityUpdate {
-    Username,
-    Picture,
-    PicturePath,
-    PictureStream,
+    Username(String),
+    Picture(Vec<u8>),
+    PicturePath(std::path::PathBuf),
+    // PictureStream(BoxStream<'static, Result<Vec<u8>, std::io::Error>>),
+    AddMetadataKey { key: String, value: String },
+    RemoveMetadataKey(String),
     ClearPicture,
-    Banner,
-    BannerPath,
-    BannerStream,
+    Banner(Vec<u8>),
+    BannerPath(std::path::PathBuf),
+    // BannerStream(BoxStream<'static, Result<Vec<u8>, std::io::Error>>),
     ClearBanner,
-    StatusMessage,
+    StatusMessage(Option<String>),
     ClearStatusMessage,
-    AddMetadataKey,
-    RemoveMetadataKey,
 }
 
-fn to_identity_update_enum(
-    option: IdentityUpdate,
-    value: JsValue,
-) -> Result<identity::IdentityUpdate, JsError> {
-    match option {
-        IdentityUpdate::Username => match value.as_string() {
-            Some(s) => Ok(identity::IdentityUpdate::Username(s)),
-            None => Err(JsError::new("JsValue is not a string")),
-        },
-        IdentityUpdate::Picture => Ok(identity::IdentityUpdate::Picture(
-            Uint8Array::new(&value).to_vec(),
-        )),
-        IdentityUpdate::PicturePath => Ok(identity::IdentityUpdate::PicturePath(
-            value
-                .as_string()
-                .ok_or(JsError::new("JsValue is not a string"))?
-                .into(),
-        )),
-        // IdentityUpdate::PictureStream => Ok(identity::IdentityUpdate::PictureStream(
-        //     value.into()
-        // )),
-        IdentityUpdate::ClearPicture => Ok(identity::IdentityUpdate::ClearPicture),
-        IdentityUpdate::Banner => Ok(identity::IdentityUpdate::Banner(
-            Uint8Array::new(&value).to_vec(),
-        )),
-        IdentityUpdate::BannerPath => Ok(identity::IdentityUpdate::BannerPath(
-            value
-                .as_string()
-                .ok_or(JsError::new("JsValue is not a string"))?
-                .into(),
-        )),
-        // IdentityUpdate::BannerStream => Ok(identity::IdentityUpdate::BannerStream(
-        //     value.into()
-        // )),
-        IdentityUpdate::ClearBanner => Ok(identity::IdentityUpdate::ClearBanner),
-        IdentityUpdate::StatusMessage => {
-            if value.is_null() {
-                return Ok(identity::IdentityUpdate::StatusMessage(None));
-            }
-            match value.as_string() {
-                Some(s) => Ok(identity::IdentityUpdate::StatusMessage(Some(s))),
-                None => Err(JsError::new("JsValue is not a string")),
-            }
+impl Into<identity::IdentityUpdate> for IdentityUpdate {
+    fn into(self) -> identity::IdentityUpdate {
+        match self {
+            IdentityUpdate::Username(name) => identity::IdentityUpdate::Username(name),
+            IdentityUpdate::Picture(data) => identity::IdentityUpdate::Picture(data),
+            IdentityUpdate::PicturePath(path) => identity::IdentityUpdate::PicturePath(path),
+            // IdentityUpdate::PictureStream => Ok(identity::IdentityUpdate::PictureStream(
+            //     value.into()
+            // )),
+            IdentityUpdate::ClearPicture => identity::IdentityUpdate::ClearPicture,
+            IdentityUpdate::Banner(data) => identity::IdentityUpdate::Banner(data),
+            IdentityUpdate::BannerPath(path) => identity::IdentityUpdate::BannerPath(path),
+            // // IdentityUpdate::BannerStream => Ok(identity::IdentityUpdate::BannerStream(
+            // //     value.into()
+            // // )),
+            IdentityUpdate::ClearBanner => identity::IdentityUpdate::ClearBanner,
+            IdentityUpdate::StatusMessage(value) => identity::IdentityUpdate::StatusMessage(value),
+            IdentityUpdate::ClearStatusMessage => identity::IdentityUpdate::ClearStatusMessage,
+            IdentityUpdate::AddMetadataKey{key, value } => identity::IdentityUpdate::AddMetadataKey{ key, value },
+            IdentityUpdate::RemoveMetadataKey(key) => identity::IdentityUpdate::RemoveMetadataKey { key },
         }
-        IdentityUpdate::ClearStatusMessage => Ok(identity::IdentityUpdate::ClearStatusMessage),
-        IdentityUpdate::AddMetadataKey => {
-            let array: Array = value
-                .dyn_into()
-                .map_err(|_| JsError::new("key, value should be in an array"))?;
-            let key = array
-                .get(0)
-                .as_string()
-                .ok_or(JsError::new("key should be a string"))?;
-            let value = array
-                .get(1)
-                .as_string()
-                .ok_or(JsError::new("value should be a string"))?;
-            Ok(identity::IdentityUpdate::AddMetadataKey { key, value })
+    }
+}
+
+#[derive(Tsify, Deserialize, Serialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum Identifier {
+    DID(String),
+    DIDList(Vec<String>),
+    Username(String),
+}
+
+impl Into<identity::Identifier> for Identifier {
+    fn into(self) -> identity::Identifier {
+        match self {
+            Identifier::DID(did) => identity::Identifier::DID(DID::from_str(&did).unwrap()),
+            Identifier::DIDList(vec) => identity::Identifier::DIDList(
+                vec.into_iter()
+                    .map(|did| DID::from_str(&did).unwrap())
+                    .collect(),
+            ),
+            Identifier::Username(name) => identity::Identifier::Username(name),
         }
-        IdentityUpdate::RemoveMetadataKey => Ok(identity::IdentityUpdate::RemoveMetadataKey {
-            key: value
-                .as_string()
-                .ok_or(JsError::new("JsValue is not a string"))?
-                .into(),
-        }),
-        _ => Err(JsError::new("IdentityUpdate variant not yet implemented")),
     }
 }
 
 #[wasm_bindgen]
-pub enum Identifier {
-    DID,
-    DIDList,
-    Username,
+pub struct FriendRequest {
+     identity: String,
+     date: js_sys::Date,
 }
-fn to_identifier_enum(option: Identifier, value: JsValue) -> Result<identity::Identifier, JsError> {
-    match option {
-        Identifier::DID => match value.as_string() {
-            Some(did) => Ok(identity::Identifier::DID(DID::from_str(did.as_str())?)),
-            None => Err(JsError::new("JsValue is not a string")),
-        },
-        Identifier::DIDList => {
-            let iterator = match js_sys::try_iter(&value) {
-                Err(e) => Err(JsError::new(e.as_string().unwrap_or_default().as_str())),
-                Ok(value) => match value {
-                    None => Err(JsError::new("JsValue is not iterable")),
-                    Some(value) => Ok(value),
-                },
-            }?;
 
-            let mut did_list = Vec::<DID>::new();
-            for item in iterator {
-                let item = match item {
-                    Err(e) => Err(JsError::new(e.as_string().unwrap_or_default().as_str())),
-                    Ok(value) => Ok(value),
-                }?;
-                let str = item
-                    .as_string()
-                    .ok_or_else(|| JsError::new("JsValue is not a string"))?;
-                did_list.push(DID::from_str(&str)?);
-            }
-            Ok(identity::Identifier::DIDList(did_list))
+#[wasm_bindgen]
+impl FriendRequest {
+
+    #[wasm_bindgen(getter)]
+    pub fn identity(&self) -> String {
+        self.identity.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn date(&self) -> js_sys::Date {
+        self.date.clone()
+    }
+}
+
+impl From<multipass::identity::FriendRequest> for FriendRequest {
+    fn from(value: multipass::identity::FriendRequest) -> Self {
+        FriendRequest {
+            identity: value.identity().to_string(),
+            date: value.date().into(),
         }
-        Identifier::Username => match value.as_string() {
-            Some(s) => Ok(identity::Identifier::Username(s)),
-            None => Err(JsError::new("JsValue is not a string")),
-        },
+    }
+}
+
+#[wasm_bindgen]
+pub struct MultiPassEventKind {
+    kind: MultiPassEventKindEnum,
+    did: String,
+}
+
+#[wasm_bindgen]
+impl MultiPassEventKind {
+    #[wasm_bindgen(getter)]
+    pub fn kind(&self) -> MultiPassEventKindEnum {
+        self.kind
+    }
+    #[wasm_bindgen(getter)]
+    pub fn did(&self) -> String {
+        self.did.clone()
     }
 }
 
@@ -503,23 +473,6 @@ impl From<multipass::MultiPassEventKind> for MultiPassEventKind {
         }
     }
 }
-#[wasm_bindgen]
-pub struct MultiPassEventKind {
-    kind: MultiPassEventKindEnum,
-    did: String,
-}
-
-#[wasm_bindgen]
-impl MultiPassEventKind {
-    #[wasm_bindgen(getter)]
-    pub fn kind(&self) -> MultiPassEventKindEnum {
-        self.kind
-    }
-    #[wasm_bindgen(getter)]
-    pub fn did(&self) -> String {
-        self.did.clone()
-    }
-}
 
 #[derive(Copy, Clone)]
 #[wasm_bindgen]
@@ -550,13 +503,19 @@ impl IdentityImage {
         self.0.data().to_vec()
     }
 
-    pub fn image_type(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.0.image_type()).unwrap()
+    pub fn image_type(&self) -> FileType {
+        self.0.image_type().into()
     }
 }
 
 #[wasm_bindgen]
 pub struct Identity(warp::multipass::identity::Identity);
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = "Map<string,string>")]
+    pub type MetaData;
+}
 
 #[wasm_bindgen]
 impl Identity {
@@ -578,8 +537,8 @@ impl Identity {
     pub fn modified(&self) -> js_sys::Date {
         self.0.modified().into()
     }
-    pub fn metadata(&self) -> wasm_bindgen::JsValue {
-        serde_wasm_bindgen::to_value(&self.0.metadata()).expect("valid ser")
+    pub fn metadata(&self) -> MetaData {
+        MetaData::from(serde_wasm_bindgen::to_value(&self.0.metadata()).unwrap())
     }
 }
 #[wasm_bindgen]
@@ -602,8 +561,9 @@ impl Identity {
     pub fn set_modified(&mut self, time: js_sys::Date) {
         self.0.set_modified(time.into());
     }
-    pub fn set_metadata(&mut self, map: Map) {
+    pub fn set_metadata(&mut self, map: MetaData) {
         let mut index_map = IndexMap::new();
+        let map: Map = map.obj.into();
         map.for_each(&mut |key, value| {
             if key.is_string() && value.is_string() {
                 index_map.insert(key.as_string().unwrap(), value.as_string().unwrap());
