@@ -250,8 +250,7 @@ impl Directory {
     }
     pub fn set_thumbnail_format(&self, format: FileType) {
         let format: warp::constellation::file::FileType = format.into();
-        self.inner
-            .set_thumbnail_format(format.into())
+        self.inner.set_thumbnail_format(format.into())
     }
     pub fn thumbnail_format(&self) -> FileType {
         let format: warp::constellation::file::FileType = self.inner.thumbnail_format().into();
@@ -336,8 +335,7 @@ impl File {
     }
     pub fn set_thumbnail_format(&self, format: FileType) {
         let format: warp::constellation::file::FileType = format.into();
-        self.inner
-            .set_thumbnail_format(format.into())
+        self.inner.set_thumbnail_format(format.into())
     }
     pub fn thumbnail_format(&self) -> FileType {
         let format: warp::constellation::file::FileType = self.inner.thumbnail_format().into();
@@ -386,8 +384,7 @@ impl File {
         self.inner.set_hash(hash.into())
     }
     pub fn set_file_type(&self, file_type: FileType) {
-        self.inner
-            .set_file_type(file_type.into())
+        self.inner.set_file_type(file_type.into())
     }
     pub fn file_type(&self) -> FileType {
         self.inner.file_type().into()
@@ -493,8 +490,7 @@ impl Item {
     }
     pub fn set_thumbnail_format(&self, format: FileType) {
         let format: warp::constellation::file::FileType = format.into();
-        self.inner
-            .set_thumbnail_format(format.into())
+        self.inner.set_thumbnail_format(format.into())
     }
     pub fn set_size(&self, size: usize) -> Result<(), JsError> {
         self.inner.set_size(size).map_err(|e| e.into())
@@ -638,7 +634,9 @@ impl From<&constellation::file::FileType> for FileType {
     fn from(value: &constellation::file::FileType) -> Self {
         match value {
             constellation::file::FileType::Generic => FileType::Generic,
-            constellation::file::FileType::Mime(media_type_buf) => FileType::Mime(media_type_buf.to_string()),
+            constellation::file::FileType::Mime(media_type_buf) => {
+                FileType::Mime(media_type_buf.to_string())
+            }
         }
     }
 }
@@ -647,7 +645,9 @@ impl From<constellation::file::FileType> for FileType {
     fn from(value: constellation::file::FileType) -> Self {
         match value {
             constellation::file::FileType::Generic => FileType::Generic,
-            constellation::file::FileType::Mime(media_type_buf) => FileType::Mime(media_type_buf.to_string()),
+            constellation::file::FileType::Mime(media_type_buf) => {
+                FileType::Mime(media_type_buf.to_string())
+            }
         }
     }
 }
@@ -656,7 +656,9 @@ impl Into<constellation::file::FileType> for FileType {
     fn into(self) -> constellation::file::FileType {
         match self {
             FileType::Generic => constellation::file::FileType::Generic,
-            FileType::Mime(media_type_buf) => constellation::file::FileType::Mime(media_type_buf.parse().unwrap()),
+            FileType::Mime(media_type_buf) => {
+                constellation::file::FileType::Mime(media_type_buf.parse().unwrap())
+            }
         }
     }
 }

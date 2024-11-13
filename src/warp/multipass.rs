@@ -150,7 +150,7 @@ impl MultiPassBox {
             .list_incoming_request()
             .await
             .map_err(|e| e.into())
-            .map(|ok| ok.into_iter().map(|r|r.into()).collect())
+            .map(|ok| ok.into_iter().map(|r| r.into()).collect())
     }
 
     /// Check to determine if a request been sent to the DID
@@ -167,7 +167,7 @@ impl MultiPassBox {
             .list_outgoing_request()
             .await
             .map_err(|e| e.into())
-            .map(|ok| ok.into_iter().map(|r|r.into()).collect())
+            .map(|ok| ok.into_iter().map(|r| r.into()).collect())
     }
 
     /// Remove friend from contacts
@@ -322,8 +322,12 @@ impl Into<identity::IdentityUpdate> for IdentityUpdate {
             IdentityUpdate::ClearBanner => identity::IdentityUpdate::ClearBanner,
             IdentityUpdate::StatusMessage(value) => identity::IdentityUpdate::StatusMessage(value),
             IdentityUpdate::ClearStatusMessage => identity::IdentityUpdate::ClearStatusMessage,
-            IdentityUpdate::AddMetadataKey{key, value } => identity::IdentityUpdate::AddMetadataKey{ key, value },
-            IdentityUpdate::RemoveMetadataKey(key) => identity::IdentityUpdate::RemoveMetadataKey { key },
+            IdentityUpdate::AddMetadataKey { key, value } => {
+                identity::IdentityUpdate::AddMetadataKey { key, value }
+            }
+            IdentityUpdate::RemoveMetadataKey(key) => {
+                identity::IdentityUpdate::RemoveMetadataKey { key }
+            }
         }
     }
 }
@@ -352,13 +356,12 @@ impl Into<identity::Identifier> for Identifier {
 
 #[wasm_bindgen]
 pub struct FriendRequest {
-     identity: String,
-     date: js_sys::Date,
+    identity: String,
+    date: js_sys::Date,
 }
 
 #[wasm_bindgen]
 impl FriendRequest {
-
     #[wasm_bindgen(getter)]
     pub fn identity(&self) -> String {
         self.identity.clone()
