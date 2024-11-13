@@ -1,9 +1,10 @@
 use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
 use indexmap::IndexSet;
-use js_sys::Promise;
+use js_sys::{Array, Promise};
 use serde::{Deserialize, Serialize};
 use tsify_next::Tsify;
+use wasm_bindgen::convert::TryFromJsValue;
 use std::str::FromStr;
 use uuid::Uuid;
 use warp::raygun::{
@@ -1069,6 +1070,7 @@ impl From<warp::raygun::ConversationType> for ConversationType {
 
 #[wasm_bindgen]
 extern "C" {
+    // Vec of enums dont get converted to arrays of that type
     #[wasm_bindgen(typescript_type = "GroupPermission[]")]
     pub type GroupPermissionList;
 }
@@ -1088,6 +1090,7 @@ impl From<GroupPermission> for warp::raygun::GroupPermission {
         }
     }
 }
+
 impl From<warp::raygun::GroupPermission> for GroupPermission {
     fn from(value: warp::raygun::GroupPermission) -> Self {
         match value {
@@ -1110,18 +1113,22 @@ impl GroupPermissions {
     pub fn set_permissions(
         &mut self,
         did: String,
-        permissions: Vec<GroupPermission>,
+        permissions: GroupPermissionList,
     ) -> Result<(), JsError> {
         let did = DID::from_str(&did)?;
+        let permissions: js_sys::Array = js_sys::Array::from(&permissions);
         let permissions: IndexSet<warp::raygun::GroupPermission> =
-            permissions.into_iter().map(|p| p.into()).collect();
+            permissions.into_iter().map(|p| GroupPermission::try_from_js_value(p).unwrap().into()).collect();
         self.0.insert(did, permissions);
         Ok(())
     }
-    pub fn get_permissions(&self, did: String) -> Result<Option<Vec<GroupPermission>>, JsError> {
+    pub fn get_permissions(&self, did: String) -> Result<Option<GroupPermissionList>, JsError> {
         let result = self.0.get(&DID::from_str(&did)?);
-        let result: Option<Vec<GroupPermission>> =
-            result.map(|s| s.into_iter().map(|p| (*p).into()).collect());
+        let result =
+            result.map(|s| {
+                Array::from_iter(s.into_iter().map(|p| GroupPermission::from(*p).into()).collect::<Vec<JsValue>>())
+            });
+        let result = result.map(|v|GroupPermissionList::unchecked_from_js(v.into()));
         Ok(result)
     }
     pub fn remove_permissions(&mut self, did: String) -> Result<(), JsError> {
