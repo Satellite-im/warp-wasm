@@ -314,9 +314,7 @@ pub struct File {
 
 impl File {
     pub fn from_file(inner: constellation::file::File) -> File {
-        File {
-            inner,
-        }
+        File { inner }
     }
 }
 

@@ -3,9 +3,8 @@ use futures::StreamExt;
 use indexmap::IndexSet;
 use js_sys::{Array, Promise};
 use serde::{Deserialize, Serialize};
-use tsify_next::Tsify;
-use wasm_bindgen::convert::TryFromJsValue;
 use std::str::FromStr;
+use tsify_next::Tsify;
 use uuid::Uuid;
 use warp::raygun::{
     GroupPermissionOpt, RayGunAttachment, RayGunConversationInformation, RayGunEvents,
@@ -18,6 +17,7 @@ use warp::{
     raygun::{self, Location, LocationKind, RayGun},
 };
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
+use wasm_bindgen::convert::TryFromJsValue;
 use wasm_bindgen::prelude::*;
 
 use super::constellation::{File, FileType, Progression};
@@ -639,7 +639,9 @@ impl Conversation {
 #[wasm_bindgen]
 pub struct Messages {
     variant: MessagesEnum,
-    value: JsValue,
+    messages: Option<Vec<raygun::Message>>,
+    stream: Option<AsyncIterator>,
+    pages: Option<(Vec<raygun::MessagePage>, usize)>,
 }
 
 #[wasm_bindgen]
@@ -648,50 +650,94 @@ impl Messages {
         match messages {
             raygun::Messages::List(list) => Self {
                 variant: MessagesEnum::List,
-                value: serde_wasm_bindgen::to_value(&list).unwrap(),
+                messages: Some(list),
+                stream: None,
+                pages: None,
             },
             raygun::Messages::Stream(stream) => Self {
-                variant: MessagesEnum::List,
-                value: AsyncIterator::new(Box::pin(stream.map(|s| Message::new(s).into()))).into(),
+                variant: MessagesEnum::Stream,
+                messages: None,
+                stream: Some(
+                    AsyncIterator::new(Box::pin(stream.map(|s| Message::new(s).into()))).into(),
+                ),
+                pages: None,
             },
-            raygun::Messages::Page { pages, total } => {
-                let pages = pages
-                    .iter()
-                    .map(|p| MessagePage {
-                        id: p.id(),
-                        messages: p
-                            .messages()
-                            .iter()
-                            .map(|m| Message::new(m.clone()))
-                            .collect(),
-                        total: p.total(),
-                    })
-                    .collect();
-
-                Self {
-                    variant: MessagesEnum::Page,
-                    value: serde_wasm_bindgen::to_value(&Page { pages, total }).unwrap(),
-                }
-            }
+            raygun::Messages::Page { pages, total } => Self {
+                variant: MessagesEnum::Page,
+                messages: None,
+                stream: None,
+                pages: Some((pages, total)),
+            },
         }
     }
+    /// The variant of this message struct
+    /// Depending on the variant the other functions will return undefined or not
     pub fn variant(&self) -> MessagesEnum {
         self.variant
     }
-    pub fn value(&self) -> JsValue {
-        self.value.clone()
+    /// Return the list of messages if its a list variant
+    pub fn messages(&self) -> Option<Vec<Message>> {
+        if let Some(list) = &self.messages {
+            Some(list.iter().map(|m| Message::new(m.clone())).collect())
+        } else {
+            None
+        }
+    }
+    /// Return the next element of the stream if this is a stream variant
+    pub async fn next_stream(&mut self) -> std::result::Result<Promise, JsError> {
+        if let Some(s) = self.stream.as_mut() {
+            return s.next().await;
+        }
+        Err(JsError::new("Not a stream"))
+    }
+    /// Return the page if its a page variant
+    pub fn page(&self) -> Option<Page> {
+        if let Some((pages, total)) = &self.pages {
+            let pages = pages
+                .iter()
+                .map(|p| MessagePage {
+                    id: p.id(),
+                    messages: p
+                        .messages()
+                        .iter()
+                        .map(|m| Message::new(m.clone()))
+                        .collect(),
+                    total: p.total(),
+                })
+                .collect();
+            Some(Page {
+                pages,
+                total: *total,
+            })
+        } else {
+            None
+        }
     }
 }
 #[derive(Serialize, Deserialize)]
+#[wasm_bindgen]
 pub struct Page {
-    pub pages: Vec<MessagePage>,
+    pages: Vec<MessagePage>,
     pub total: usize,
 }
-#[derive(Serialize, Deserialize)]
+#[wasm_bindgen]
+impl Page {
+    pub fn get_pages_content(&self) -> Vec<MessagePage> {
+        self.pages.clone()
+    }
+}
+#[derive(Serialize, Deserialize, Clone)]
+#[wasm_bindgen]
 pub struct MessagePage {
     pub id: usize,
-    pub messages: Vec<Message>,
+    messages: Vec<Message>,
     pub total: usize,
+}
+#[wasm_bindgen]
+impl MessagePage {
+    pub fn get_messages(&self) -> Vec<Message> {
+        self.messages.clone()
+    }
 }
 #[wasm_bindgen]
 #[derive(Copy, Clone)]
@@ -715,23 +761,17 @@ impl MessageOptions {
     }
 
     pub fn set_date_range(&mut self, start: js_sys::Date, end: js_sys::Date) {
-        self.inner = self
-            .inner
-            .clone()
-            .set_date_range(core::ops::Range {
-                start: start.into(),
-                end: end.into()
-            });
+        self.inner = self.inner.clone().set_date_range(core::ops::Range {
+            start: start.into(),
+            end: end.into(),
+        });
     }
 
     pub fn set_range(&mut self, start: usize, end: usize) {
         self.inner = self
             .inner
             .clone()
-            .set_range(core::ops::Range {
-                start,
-                end
-            });
+            .set_range(core::ops::Range { start, end });
     }
 
     pub fn set_limit(&mut self, limit: u8) {
@@ -763,10 +803,7 @@ impl MessageOptions {
     }
 
     pub fn set_messages_type(&mut self, ty: MessagesType) {
-        self.inner = self
-            .inner
-            .clone()
-            .set_messages_type(ty.into());
+        self.inner = self.inner.clone().set_messages_type(ty.into());
     }
 }
 
@@ -820,7 +857,7 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Message {
     inner: raygun::Message,
 }
@@ -1117,18 +1154,23 @@ impl GroupPermissions {
     ) -> Result<(), JsError> {
         let did = DID::from_str(&did)?;
         let permissions: js_sys::Array = js_sys::Array::from(&permissions);
-        let permissions: IndexSet<warp::raygun::GroupPermission> =
-            permissions.into_iter().map(|p| GroupPermission::try_from_js_value(p).unwrap().into()).collect();
+        let permissions: IndexSet<warp::raygun::GroupPermission> = permissions
+            .into_iter()
+            .map(|p| GroupPermission::try_from_js_value(p).unwrap().into())
+            .collect();
         self.0.insert(did, permissions);
         Ok(())
     }
     pub fn get_permissions(&self, did: String) -> Result<Option<GroupPermissionList>, JsError> {
         let result = self.0.get(&DID::from_str(&did)?);
-        let result =
-            result.map(|s| {
-                Array::from_iter(s.into_iter().map(|p| GroupPermission::from(*p).into()).collect::<Vec<JsValue>>())
-            });
-        let result = result.map(|v|GroupPermissionList::unchecked_from_js(v.into()));
+        let result = result.map(|s| {
+            Array::from_iter(
+                s.into_iter()
+                    .map(|p| GroupPermission::from(*p).into())
+                    .collect::<Vec<JsValue>>(),
+            )
+        });
+        let result = result.map(|v| GroupPermissionList::unchecked_from_js(v.into()));
         Ok(result)
     }
     pub fn remove_permissions(&mut self, did: String) -> Result<(), JsError> {
@@ -1190,7 +1232,13 @@ impl Into<raygun::MessagesType> for MessagesType {
         match self {
             MessagesType::Stream => raygun::MessagesType::Stream,
             MessagesType::List => raygun::MessagesType::List,
-            MessagesType::Pages{page, amount_per_page} => raygun::MessagesType::Pages{page, amount_per_page},
+            MessagesType::Pages {
+                page,
+                amount_per_page,
+            } => raygun::MessagesType::Pages {
+                page,
+                amount_per_page,
+            },
         }
     }
 }
