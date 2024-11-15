@@ -74,6 +74,10 @@
       let msg_id = await warp_a.raygun.send(conversation_a.id(), msg)
       console.log(`identity: ${identity_a.username()} \nmsg_id: ${msg_id} \nmsg: ${msg} `)
 
+      let perm = new wasm.GroupPermissions()
+      console.log("pre ", perm.get_permissions(identity_b.did_key()), [wasm.GroupPermission.AddParticipants])
+      perm.set_permissions(identity_b.did_key(), [wasm.GroupPermission.AddParticipants])
+      console.log("post ", perm.get_permissions(identity_b.did_key()))
     });
   </script>
   <body>
