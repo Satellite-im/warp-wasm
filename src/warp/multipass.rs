@@ -7,7 +7,10 @@ use std::str::FromStr;
 use tsify_next::Tsify;
 use warp::error::Error;
 use warp::multipass::identity::ShortId;
-use warp::multipass::{Friends, IdentityInformation, LocalIdentity, MultiPassEvent};
+use warp::multipass::{
+    Friends, IdentityImportOption, IdentityInformation, LocalIdentity, MultiPassEvent,
+    MultiPassImportExport,
+};
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp::{
@@ -98,6 +101,46 @@ impl MultiPassBox {
                     s.map(|t| Into::<MultiPassEventKind>::into(t).into()),
                 ))
             })
+    }
+}
+
+/// impl MultiPassImportExport trait
+#[wasm_bindgen]
+impl MultiPassBox {
+    /// Import identity from a specific location
+    /// If a buffer is provided will import from that buffer. Otherwise will try to import from remote
+    pub async fn import_identity(
+        &mut self,
+        passphrase: String,
+        mut to: Option<Vec<u8>>,
+    ) -> Result<Identity, JsError> {
+        let loc: multipass::ImportLocation = match to.as_mut() {
+            Some(buffer) => multipass::ImportLocation::Memory { buffer },
+            None => multipass::ImportLocation::Remote,
+        };
+        self.inner
+            .import_identity(IdentityImportOption::Locate {
+                location: loc,
+                passphrase,
+            })
+            .await
+            .map_err(|e| e.into())
+            .map(|i| i.into())
+    }
+
+    /// Manually export identity to a specific location
+    /// If exporting to memory will return the memory buffer for it
+    pub async fn export_identity(&mut self, memory: Option<bool>) -> Result<Option<Vec<u8>>, JsError> {
+        let mut buffer: Option<Vec<u8>> = if memory.unwrap_or_default() { Some(vec![]) } else { None };
+        let loc: multipass::ImportLocation = match buffer.as_mut() {
+            Some(buffer) => multipass::ImportLocation::Memory { buffer },
+            None => multipass::ImportLocation::Remote,
+        };
+        self.inner
+            .export_identity(loc)
+            .await
+            .map(|_| buffer)
+            .map_err(|e| e.into())
     }
 }
 
