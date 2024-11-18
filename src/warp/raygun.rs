@@ -604,7 +604,7 @@ impl Conversation {
         self.inner.id().to_string()
     }
     pub fn name(&self) -> Option<String> {
-        self.inner.name()
+        self.inner.name().map(|s|s.to_string())
     }
     pub fn creator(&self) -> Option<String> {
         self.inner.creator().map(|did| did.to_string())
@@ -621,8 +621,10 @@ impl Conversation {
     pub fn conversation_type(&self) -> ConversationType {
         self.inner.conversation_type().into()
     }
+    /// Get the permissions for this group. 
+    /// Modifications on this struct are NOT reflected on the conversation. You need to set them again
     pub fn permissions(&self) -> GroupPermissions {
-        GroupPermissions(self.inner.permissions())
+        GroupPermissions(self.inner.permissions().clone())
     }
     pub fn recipients(&self) -> Vec<String> {
         self.inner
@@ -908,7 +910,7 @@ impl Message {
     }
 
     pub fn lines(&self) -> Vec<String> {
-        self.inner.lines()
+        self.inner.lines().to_vec()
     }
 
     pub fn attachments(&self) -> Vec<File> {
@@ -1116,14 +1118,17 @@ extern "C" {
 #[wasm_bindgen]
 pub enum GroupPermission {
     AddParticipants,
-    SetGroupName,
-}
+    RemoveParticipants,
+    EditGroupInfo,
+    EditGroupImages,}
 
 impl From<GroupPermission> for warp::raygun::GroupPermission {
     fn from(value: GroupPermission) -> Self {
         match value {
             GroupPermission::AddParticipants => warp::raygun::GroupPermission::AddParticipants,
-            GroupPermission::SetGroupName => warp::raygun::GroupPermission::SetGroupName,
+            GroupPermission::RemoveParticipants => warp::raygun::GroupPermission::RemoveParticipants,
+            GroupPermission::EditGroupInfo => warp::raygun::GroupPermission::EditGroupInfo,
+            GroupPermission::EditGroupImages => warp::raygun::GroupPermission::EditGroupImages,
         }
     }
 }
@@ -1132,7 +1137,9 @@ impl From<warp::raygun::GroupPermission> for GroupPermission {
     fn from(value: warp::raygun::GroupPermission) -> Self {
         match value {
             warp::raygun::GroupPermission::AddParticipants => GroupPermission::AddParticipants,
-            warp::raygun::GroupPermission::SetGroupName => GroupPermission::SetGroupName,
+            warp::raygun::GroupPermission::RemoveParticipants => GroupPermission::RemoveParticipants,
+            warp::raygun::GroupPermission::EditGroupInfo => GroupPermission::EditGroupInfo,
+            warp::raygun::GroupPermission::EditGroupImages => GroupPermission::EditGroupImages,
         }
     }
 }
