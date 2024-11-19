@@ -566,10 +566,10 @@ extern "C" {
 #[wasm_bindgen]
 impl Identity {
     pub fn username(&self) -> String {
-        self.0.username()
+        self.0.username().to_string()
     }
     pub fn status_message(&self) -> Option<String> {
-        self.0.status_message()
+        self.0.status_message().map(|s|s.to_string())
     }
     pub fn short_id(&self) -> String {
         format!("{}", self.0.short_id())
