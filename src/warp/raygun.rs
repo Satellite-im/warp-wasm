@@ -1195,9 +1195,10 @@ impl From<GroupPermissions> for warp::raygun::GroupPermissions {
 #[wasm_bindgen]
 pub struct ConversationImage(warp::raygun::ConversationImage);
 
+#[wasm_bindgen]
 impl ConversationImage {
-    pub fn data(&self) -> &[u8] {
-        &self.0.data()
+    pub fn data(&self) -> Vec<u8> {
+        self.0.data().to_vec()
     }
 
     pub fn image_type(&self) -> FileType {
