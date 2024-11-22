@@ -112,8 +112,9 @@ impl MultiPassBox {
     pub async fn import_identity(
         &mut self,
         passphrase: String,
-        mut to: Option<Vec<u8>>,
+        to: Option<Vec<u8>>,
     ) -> Result<Identity, JsError> {
+        let mut to = to.clone();
         let loc: multipass::ImportLocation = match to.as_mut() {
             Some(buffer) => multipass::ImportLocation::Memory { buffer },
             None => multipass::ImportLocation::Remote,
