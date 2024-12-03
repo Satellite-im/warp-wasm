@@ -2,6 +2,25 @@ use wasm_bindgen::prelude::*;
 use std::str::FromStr;
 
 #[wasm_bindgen]
+pub struct WarpIpfs;
+
+#[wasm_bindgen]
+impl WarpIpfs {
+    #[wasm_bindgen(constructor)]
+    pub async fn new(
+        config: Config,
+        tesseract: Option<crate::warp::tesseract::Tesseract>,
+    ) -> crate::warp::WarpInstance {
+        let mut builder = warp_ipfs::WarpIpfsBuilder::default().set_config(config.0);
+        if let Some(tesseract) = tesseract {
+            builder = builder.set_tesseract(tesseract.into());
+        }
+        let instance = builder.await;
+        crate::warp::WarpInstance::new(instance)
+    }
+}
+
+#[wasm_bindgen]
 pub struct Config(warp_ipfs::config::Config);
 
 #[wasm_bindgen]
