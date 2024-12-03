@@ -20,5 +20,8 @@ jobs:
           profile: minimal
           override: true
 
+      - name: Install wasm32-unknown-unknown target
+        run: rustup target add wasm32-unknown-unknown
+        
       - name: Run Cargo Check
         run: cargo check --target=wasm32-unknown-unknown
