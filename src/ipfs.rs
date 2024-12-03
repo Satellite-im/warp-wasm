@@ -56,6 +56,11 @@ impl Config {
         self.0.with_thumbnail_exact_format(exact);
     }
 
+    // New method for enabling shuttle discovery with an address
+    pub fn set_shuttle_discovery(&mut self, enable: bool, address: Option<String>) {
+        self.0.set_shuttle_discovery(enable, address);
+    }
+
     pub fn development() -> Config {
         Config(warp_ipfs::config::Config::default())
     }
@@ -74,5 +79,15 @@ impl Config {
 
     pub fn minimal_with_relay(addresses: Vec<String>) -> Config {
         Config(warp_ipfs::config::Config::minimal_with_relay(addresses))
+    }
+}
+
+// Update warp_ipfs::config::Config struct (in the warp-ipfs library) to include a method for shuttle discovery
+impl warp_ipfs::config::Config {
+    pub fn set_shuttle_discovery(&mut self, enable: bool, address: Option<String>) {
+        self.shuttle_discovery_enabled = enable;
+        if let Some(addr) = address {
+            self.shuttle_address = Some(addr);
+        }
     }
 }
