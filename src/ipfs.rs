@@ -1,23 +1,5 @@
 use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-pub struct WarpIpfs;
-
-#[wasm_bindgen]
-impl WarpIpfs {
-    #[wasm_bindgen(constructor)]
-    pub async fn new(
-        config: Config,
-        tesseract: Option<crate::warp::tesseract::Tesseract>,
-    ) -> crate::warp::WarpInstance {
-        let mut builder = warp_ipfs::WarpIpfsBuilder::default().set_config(config.0);
-        if let Some(tesseract) = tesseract {
-            builder = builder.set_tesseract(tesseract.into());
-        }
-        let instance = builder.await;
-        crate::warp::WarpInstance::new(instance)
-    }
-}
+use std::str::FromStr;
 
 #[wasm_bindgen]
 pub struct Config(warp_ipfs::config::Config);
@@ -56,22 +38,14 @@ impl Config {
         self.0.with_thumbnail_exact_format(exact);
     }
 
-    /// Enables shuttle discovery and optionally sets an address
-    pub fn set_shuttle_discovery(&mut self, enable: bool, address: Option<String>) {
-        if enable {
-            let discovery = match address {
-                Some(addr) => warp_ipfs::config::Discovery::Shuttle {
-                    addresses: vec![addr],
-                },
-                None => warp_ipfs::config::Discovery::Namespace {
-                    namespace: "default_namespace".to_string(),
-                    discovery_type: warp_ipfs::config::DiscoveryType::Shuttle,
-                },
-            }
-            self.0.set_discovery(discovery)
-        } else {
-            self.0.disable_discovery()
-        }
+    /// Enable shuttle discovery with a list of validated addresses
+    pub fn enable_shuttle_discovery(&mut self, addresses: Vec<String>) {
+        self.0.store_setting_mut().discovery = warp_ipfs::config::Discovery::Shuttle {
+            addresses: addresses
+                .into_iter()
+                .filter_map(|addr| FromStr::from_str(&addr).ok()) // Validate each address
+                .collect(),
+        };
     }
 
     pub fn development() -> Config {
