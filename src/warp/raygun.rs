@@ -604,7 +604,7 @@ impl Conversation {
         self.inner.id().to_string()
     }
     pub fn name(&self) -> Option<String> {
-        self.inner.name().map(|s|s.to_string())
+        self.inner.name().map(|s| s.to_string())
     }
     pub fn creator(&self) -> Option<String> {
         self.inner.creator().map(|did| did.to_string())
@@ -621,7 +621,7 @@ impl Conversation {
     pub fn conversation_type(&self) -> ConversationType {
         self.inner.conversation_type().into()
     }
-    /// Get the permissions for this group. 
+    /// Get the permissions for this group.
     /// Modifications on this struct are NOT reflected on the conversation. You need to set them again
     pub fn permissions(&self) -> GroupPermissions {
         GroupPermissions(self.inner.permissions().clone())
@@ -957,11 +957,11 @@ impl AttachmentStream {
         Self { size, stream }
     }
 }
-impl Into<raygun::Location> for AttachmentFile {
-    fn into(self) -> raygun::Location {
-        if let Some(attachment) = self.stream {
+impl From<AttachmentFile> for raygun::Location {
+    fn from(value: AttachmentFile) -> Self {
+        if let Some(attachment) = value.stream {
             Location::Stream {
-                name: self.file,
+                name: value.file,
                 size: attachment.size,
                 stream: {
                     let stream = InnerStream::from(wasm_streams::ReadableStream::from_raw(
@@ -971,7 +971,7 @@ impl Into<raygun::Location> for AttachmentFile {
                 },
             }
         } else {
-            Location::Constellation { path: self.file }
+            Location::Constellation { path: value.file }
         }
     }
 }
@@ -1120,13 +1120,16 @@ pub enum GroupPermission {
     AddParticipants,
     RemoveParticipants,
     EditGroupInfo,
-    EditGroupImages,}
+    EditGroupImages,
+}
 
 impl From<GroupPermission> for warp::raygun::GroupPermission {
     fn from(value: GroupPermission) -> Self {
         match value {
             GroupPermission::AddParticipants => warp::raygun::GroupPermission::AddParticipants,
-            GroupPermission::RemoveParticipants => warp::raygun::GroupPermission::RemoveParticipants,
+            GroupPermission::RemoveParticipants => {
+                warp::raygun::GroupPermission::RemoveParticipants
+            }
             GroupPermission::EditGroupInfo => warp::raygun::GroupPermission::EditGroupInfo,
             GroupPermission::EditGroupImages => warp::raygun::GroupPermission::EditGroupImages,
         }
@@ -1137,7 +1140,9 @@ impl From<warp::raygun::GroupPermission> for GroupPermission {
     fn from(value: warp::raygun::GroupPermission) -> Self {
         match value {
             warp::raygun::GroupPermission::AddParticipants => GroupPermission::AddParticipants,
-            warp::raygun::GroupPermission::RemoveParticipants => GroupPermission::RemoveParticipants,
+            warp::raygun::GroupPermission::RemoveParticipants => {
+                GroupPermission::RemoveParticipants
+            }
             warp::raygun::GroupPermission::EditGroupInfo => GroupPermission::EditGroupInfo,
             warp::raygun::GroupPermission::EditGroupImages => GroupPermission::EditGroupImages,
         }
@@ -1235,9 +1240,9 @@ pub enum MessagesType {
     },
 }
 
-impl Into<raygun::MessagesType> for MessagesType {
-    fn into(self) -> raygun::MessagesType {
-        match self {
+impl From<MessagesType> for raygun::MessagesType {
+    fn from(value: MessagesType) -> Self {
+        match value {
             MessagesType::Stream => raygun::MessagesType::Stream,
             MessagesType::List => raygun::MessagesType::List,
             MessagesType::Pages {
