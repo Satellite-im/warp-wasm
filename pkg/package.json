@@ -3,12 +3,12 @@
   "version": "1.6.2",
   "description": "Web Assembly TypeScript library for interfacing with Warp.",
   "files": [
-    "warp_ipfs_bg.wasm",
-    "warp_ipfs.js",
-    "warp_ipfs.d.ts"
+    "warp_wasm_bg.wasm",
+    "warp_wasm.js",
+    "warp_wasm.d.ts"
   ],
-  "module": "warp_ipfs.js",
-  "types": "warp_ipfs.d.ts",
+  "module": "warp_wasm.js",
+  "types": "warp_wasm.d.ts",
   "sideEffects": [
     "./snippets/*"
   ],
