@@ -7,8 +7,8 @@ use std::str::FromStr;
 use tsify_next::Tsify;
 use uuid::Uuid;
 use warp::raygun::{
-    GroupPermissionOpt, RayGunAttachment, RayGunConversationInformation, RayGunEvents,
-    RayGunGroupConversation, RayGunStream,
+    community::RayGunCommunity, GroupPermissionOpt, RayGunAttachment,
+    RayGunConversationInformation, RayGunEvents, RayGunGroupConversation, RayGunStream,
 };
 use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
@@ -542,6 +542,780 @@ impl RayGunBox {
                 AsyncIterator::new(Box::pin(
                     ok.map(|s| serde_wasm_bindgen::to_value(&s).unwrap()),
                 ))
+            })
+    }
+}
+
+/// impl RayGunCommunity trait
+#[wasm_bindgen]
+impl RayGunBox {
+    pub async fn get_community_stream(
+        &mut self,
+        community_id: String,
+    ) -> Result<AsyncIterator, JsError> {
+        self.inner
+            .get_community_stream(Uuid::from_str(&community_id).unwrap())
+            .await
+            .map_err(|e| e.into())
+            .map(|ok| {
+                AsyncIterator::new(Box::pin(
+                    ok.map(|s| serde_wasm_bindgen::to_value(&s).unwrap()),
+                ))
+            })
+    }
+
+    pub async fn create_community(&mut self, name: String) -> Result<Community, JsError> {
+        self.inner
+            .create_community(&name)
+            .await
+            .map_err(|e| e.into())
+            .map(|inner| Community { inner })
+    }
+    pub async fn delete_community(&mut self, community_id: String) -> Result<(), JsError> {
+        self.inner
+            .delete_community(Uuid::from_str(&community_id).unwrap())
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn get_community(&self, community_id: String) -> Result<Community, JsError> {
+        self.inner
+            .get_community(Uuid::from_str(&community_id).unwrap())
+            .await
+            .map_err(|e| e.into())
+            .map(|inner| Community { inner })
+    }
+
+    pub async fn list_communities_joined(&self) -> Result<Vec<String>, JsError> {
+        self.inner
+            .list_communities_joined()
+            .await
+            .map_err(|e| e.into())
+            .map(|ids| ids.iter().map(|id| id.to_string()).collect())
+    }
+    pub async fn list_communities_invited_to(&self) -> Result<Vec<CommunityInvitation>, JsError> {
+        self.inner
+            .list_communities_invited_to()
+            .await
+            .map_err(|e| e.into())
+            .map(|invites| {
+                invites
+                    .into_iter()
+                    .map(|(id, inv)| CommunityInvitation {
+                        community: id.to_string(),
+                        invite: inv.into(),
+                    })
+                    .collect()
+            })
+    }
+    pub async fn leave_community(&mut self, community_id: String) -> Result<(), JsError> {
+        self.inner
+            .leave_community(Uuid::from_str(&community_id).unwrap())
+            .await
+            .map_err(|e| e.into())
+    }
+
+    pub async fn get_community_icon(
+        &self,
+        community_id: String,
+    ) -> Result<ConversationImage, JsError> {
+        self.inner
+            .get_community_icon(Uuid::from_str(&community_id).unwrap())
+            .await
+            .map_err(|e| e.into())
+            .map(|img| ConversationImage(img))
+    }
+    pub async fn get_community_banner(
+        &self,
+        community_id: String,
+    ) -> Result<ConversationImage, JsError> {
+        self.inner
+            .get_community_banner(Uuid::from_str(&community_id).unwrap())
+            .await
+            .map_err(|e| e.into())
+            .map(|img| ConversationImage(img))
+    }
+    pub async fn edit_community_icon(
+        &mut self,
+        community_id: String,
+        file: AttachmentFile,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_icon(Uuid::from_str(&community_id).unwrap(), file.into())
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn edit_community_banner(
+        &mut self,
+        community_id: String,
+        file: AttachmentFile,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_banner(Uuid::from_str(&community_id).unwrap(), file.into())
+            .await
+            .map_err(|e| e.into())
+    }
+
+    pub async fn create_community_invite(
+        &mut self,
+        community_id: String,
+        target_user: Option<String>,
+        expiry: Option<js_sys::Date>,
+    ) -> Result<CommunityInvite, JsError> {
+        self.inner
+            .create_community_invite(
+                Uuid::from_str(&community_id).unwrap(),
+                target_user.map(|did| DID::from_str(&did).unwrap()),
+                expiry.map(|d| d.into()),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|inv| inv.into())
+    }
+    pub async fn delete_community_invite(
+        &mut self,
+        community_id: String,
+        invite_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .delete_community_invite(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&invite_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn get_community_invite(
+        &self,
+        community_id: String,
+        invite_id: String,
+    ) -> Result<CommunityInvite, JsError> {
+        self.inner
+            .get_community_invite(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&invite_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|inv| inv.into())
+    }
+    pub async fn accept_community_invite(
+        &mut self,
+        community_id: String,
+        invite_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .accept_community_invite(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&invite_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn edit_community_invite(
+        &mut self,
+        community_id: String,
+        invite_id: String,
+        invite: CommunityInvite,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_invite(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&invite_id).unwrap(),
+                invite.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+
+    pub async fn create_community_role(
+        &mut self,
+        community_id: String,
+        name: String,
+    ) -> Result<CommunityRole, JsError> {
+        self.inner
+            .create_community_role(Uuid::from_str(&community_id).unwrap(), &name)
+            .await
+            .map_err(|e| e.into())
+            .map(|role| role.into())
+    }
+    pub async fn delete_community_role(
+        &mut self,
+        community_id: String,
+        role_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .delete_community_role(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&role_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn get_community_role(
+        &mut self,
+        community_id: String,
+        role_id: String,
+    ) -> Result<CommunityRole, JsError> {
+        self.inner
+            .get_community_role(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&role_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|role| role.into())
+    }
+    pub async fn edit_community_role_name(
+        &mut self,
+        community_id: String,
+        role_id: String,
+        new_name: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_role_name(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&role_id).unwrap(),
+                new_name,
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn grant_community_role(
+        &mut self,
+        community_id: String,
+        role_id: String,
+        user: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .grant_community_role(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&role_id).unwrap(),
+                DID::from_str(&user).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn revoke_community_role(
+        &mut self,
+        community_id: String,
+        role_id: String,
+        user: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .revoke_community_role(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&role_id).unwrap(),
+                DID::from_str(&user).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+
+    pub async fn create_community_channel(
+        &mut self,
+        community_id: String,
+        channel_name: String,
+        channel_type: CommunityChannelType,
+    ) -> Result<CommunityChannel, JsError> {
+        self.inner
+            .create_community_channel(
+                Uuid::from_str(&community_id).unwrap(),
+                &channel_name,
+                channel_type.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|inner| CommunityChannel { inner })
+    }
+    pub async fn delete_community_channel(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .delete_community_channel(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn get_community_channel(
+        &self,
+        community_id: String,
+        channel_id: String,
+    ) -> Result<CommunityChannel, JsError> {
+        self.inner
+            .get_community_channel(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|inner| CommunityChannel { inner })
+    }
+
+    pub async fn edit_community_name(
+        &mut self,
+        community_id: String,
+        name: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_name(Uuid::from_str(&community_id).unwrap(), &name)
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn edit_community_description(
+        &mut self,
+        community_id: String,
+        description: Option<String>,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_description(Uuid::from_str(&community_id).unwrap(), description)
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn grant_community_permission(
+        &mut self,
+        community_id: String,
+        permission: CommunityPermission,
+        role_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .grant_community_permission(
+                Uuid::from_str(&community_id).unwrap(),
+                permission.into(),
+                Uuid::from_str(&role_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn revoke_community_permission(
+        &mut self,
+        community_id: String,
+        permission: CommunityPermission,
+        role_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .revoke_community_permission(
+                Uuid::from_str(&community_id).unwrap(),
+                permission.into(),
+                Uuid::from_str(&role_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn grant_community_permission_for_all(
+        &mut self,
+        community_id: String,
+        permission: CommunityPermission,
+    ) -> Result<(), JsError> {
+        self.inner
+            .grant_community_permission_for_all(
+                Uuid::from_str(&community_id).unwrap(),
+                permission.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn revoke_community_permission_for_all(
+        &mut self,
+        community_id: String,
+        permission: CommunityPermission,
+    ) -> Result<(), JsError> {
+        self.inner
+            .revoke_community_permission_for_all(
+                Uuid::from_str(&community_id).unwrap(),
+                permission.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn remove_community_member(
+        &mut self,
+        community_id: String,
+        member: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .remove_community_member(
+                Uuid::from_str(&community_id).unwrap(),
+                DID::from_str(&member).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+
+    pub async fn edit_community_channel_name(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        name: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_channel_name(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                &name,
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn edit_community_channel_description(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        description: Option<String>,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_channel_description(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                description,
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn grant_community_channel_permission(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+        role_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .grant_community_channel_permission(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                permission.into(),
+                Uuid::from_str(&role_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn revoke_community_channel_permission(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+        role_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .revoke_community_channel_permission(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                permission.into(),
+                Uuid::from_str(&role_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn grant_community_channel_permission_for_all(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+    ) -> Result<(), JsError> {
+        self.inner
+            .grant_community_channel_permission_for_all(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                permission.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn revoke_community_channel_permission_for_all(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+    ) -> Result<(), JsError> {
+        self.inner
+            .revoke_community_channel_permission_for_all(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                permission.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+
+    pub async fn get_community_channel_message(
+        &self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    ) -> Result<Message, JsError> {
+        self.inner
+            .get_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|inner| Message { inner })
+    }
+    pub async fn get_community_channel_messages(
+        &self,
+        community_id: String,
+        channel_id: String,
+        options: MessageOptions,
+    ) -> Result<Messages, JsError> {
+        self.inner
+            .get_community_channel_messages(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                options.inner,
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|msgs| Messages::new(msgs))
+    }
+    pub async fn get_community_channel_message_count(
+        &self,
+        community_id: String,
+        channel_id: String,
+    ) -> Result<usize, JsError> {
+        self.inner
+            .get_community_channel_message_count(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn get_community_channel_message_reference(
+        &self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    ) -> Result<MessageReference, JsError> {
+        self.inner
+            .get_community_channel_message_reference(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|inner| MessageReference { inner })
+    }
+    pub async fn get_community_channel_message_references(
+        &self,
+        community_id: String,
+        channel_id: String,
+        options: MessageOptions,
+    ) -> Result<AsyncIterator, JsError> {
+        self.inner
+            .get_community_channel_message_references(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                options.inner,
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|s| AsyncIterator::new(Box::pin(s.map(|t| MessageReference::new(t).into()))))
+    }
+    pub async fn community_channel_message_status(
+        &self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    ) -> Result<MessageStatus, JsError> {
+        self.inner
+            .community_channel_message_status(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|status| status.into())
+    }
+    pub async fn send_community_channel_message(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        message: Vec<String>,
+    ) -> Result<String, JsError> {
+        self.inner
+            .send_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                message,
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|id| id.to_string())
+    }
+    pub async fn edit_community_channel_message(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+        message: Vec<String>,
+    ) -> Result<(), JsError> {
+        self.inner
+            .edit_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+                message,
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn reply_to_community_channel_message(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+        message: Vec<String>,
+    ) -> Result<String, JsError> {
+        self.inner
+            .reply_to_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+                message,
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|id| id.to_string())
+    }
+    pub async fn delete_community_channel_message(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .delete_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn pin_community_channel_message(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+        state: PinState,
+    ) -> Result<(), JsError> {
+        self.inner
+            .pin_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+                state.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn react_to_community_channel_message(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+        state: ReactionState,
+        emoji: String,
+    ) -> Result<(), JsError> {
+        self.inner
+            .react_to_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+                state.into(),
+                emoji,
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn send_community_channel_messsage_event(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        event: MessageEvent,
+    ) -> Result<(), JsError> {
+        self.inner
+            .send_community_channel_messsage_event(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                event.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn cancel_community_channel_messsage_event(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        event: MessageEvent,
+    ) -> Result<(), JsError> {
+        self.inner
+            .cancel_community_channel_messsage_event(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                event.into(),
+            )
+            .await
+            .map_err(|e| e.into())
+    }
+    pub async fn attach_to_community_channel_message(
+        &mut self,
+        community_id: String,
+        channel_id: String,
+        message_id: Option<String>,
+        files: Vec<AttachmentFile>,
+        message: Vec<String>,
+    ) -> Result<AttachmentResult, JsError> {
+        self.inner
+            .attach_to_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                message_id.map(|id| Uuid::from_str(&id).unwrap()),
+                files.into_iter().map(|f| f.into()).collect(),
+                message,
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|(id, ok)| AttachmentResult {
+                message_id: id.to_string(),
+                stream: AsyncIterator::new(Box::pin(
+                    ok.map(|s| serde_wasm_bindgen::to_value(&AttachmentKind::from(s)).unwrap()),
+                )),
+            })
+    }
+    /// Stream a file that been attached to a message
+    /// Note: Must use the filename associated when downloading
+    pub async fn download_stream_from_community_channel_message(
+        &self,
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+        file: String,
+    ) -> Result<AsyncIterator, JsError> {
+        self.inner
+            .download_stream_from_community_channel_message(
+                Uuid::from_str(&community_id).unwrap(),
+                Uuid::from_str(&channel_id).unwrap(),
+                Uuid::from_str(&message_id).unwrap(),
+                &file,
+            )
+            .await
+            .map_err(|e| e.into())
+            .map(|ok| {
+                AsyncIterator::new(Box::pin(ok.map(|s| match s {
+                    Ok(v) => serde_wasm_bindgen::to_value(&v).unwrap(),
+                    Err(e) => {
+                        let err: JsError = e.into();
+                        err.into()
+                    }
+                })))
             })
     }
 }
@@ -1252,6 +2026,200 @@ impl From<MessagesType> for raygun::MessagesType {
                 page,
                 amount_per_page,
             },
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+#[wasm_bindgen]
+pub struct Community {
+    inner: raygun::community::Community,
+}
+
+#[wasm_bindgen]
+pub struct CommunityInvitation {
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub community: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub invite: CommunityInvite,
+}
+
+#[derive(Clone)]
+#[wasm_bindgen]
+pub struct CommunityInvite {
+    #[wasm_bindgen(getter_with_clone)]
+    pub id: String,
+    #[wasm_bindgen(getter_with_clone)]
+    pub target_user: Option<String>,
+    #[wasm_bindgen(getter_with_clone)]
+    pub created: js_sys::Date,
+    #[wasm_bindgen(getter_with_clone)]
+    pub expiry: Option<js_sys::Date>,
+}
+
+impl From<raygun::community::CommunityInvite> for CommunityInvite {
+    fn from(value: raygun::community::CommunityInvite) -> Self {
+        CommunityInvite {
+            id: value.id().into(),
+            target_user: value.target_user().map(|u| u.to_string()),
+            created: value.created().into(),
+            expiry: value.expiry().map(|d| d.into()),
+        }
+    }
+}
+
+impl From<CommunityInvite> for raygun::community::CommunityInvite {
+    fn from(value: CommunityInvite) -> Self {
+        let mut community_invite = raygun::community::CommunityInvite::default();
+        community_invite.set_id(Uuid::from_str(&value.id).unwrap());
+        community_invite
+            .set_target_user(value.target_user.map(|user| DID::from_str(&user).unwrap()));
+        community_invite.set_created(value.created.into());
+        community_invite.set_expiry(value.expiry.map(|d| d.into()));
+        community_invite
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+#[wasm_bindgen]
+pub struct CommunityRole {
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub id: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub name: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub members: Vec<String>,
+}
+
+impl From<raygun::community::CommunityRole> for CommunityRole {
+    fn from(value: raygun::community::CommunityRole) -> Self {
+        CommunityRole {
+            id: value.id().to_string(),
+            name: value.name().to_string(),
+            members: value.members().iter().map(|id| id.to_string()).collect(),
+        }
+    }
+}
+#[derive(Serialize, Deserialize)]
+#[wasm_bindgen]
+pub struct CommunityChannel {
+    inner: raygun::community::CommunityChannel,
+}
+
+#[wasm_bindgen]
+pub enum CommunityChannelType {
+    Standard,
+    VoiceEnabled,
+}
+
+impl From<CommunityChannelType> for raygun::community::CommunityChannelType {
+    fn from(value: CommunityChannelType) -> Self {
+        match value {
+            CommunityChannelType::Standard => raygun::community::CommunityChannelType::Standard,
+            CommunityChannelType::VoiceEnabled => {
+                raygun::community::CommunityChannelType::VoiceEnabled
+            }
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum CommunityPermission {
+    EditName,
+    EditDescription,
+    EditIcon,
+    EditBanner,
+
+    CreateRoles,
+    EditRoles,
+    DeleteRoles,
+
+    GrantRoles,
+    RevokeRoles,
+
+    GrantPermissions,
+    RevokePermissions,
+
+    CreateInvites,
+    EditInvites,
+    DeleteInvites,
+
+    CreateChannels,
+    EditChannels,
+    DeleteChannels,
+
+    RemoveMembers,
+
+    DeleteMessages,
+    PinMessages,
+}
+
+impl From<CommunityPermission> for raygun::community::CommunityPermission {
+    fn from(value: CommunityPermission) -> Self {
+        match value {
+            CommunityPermission::EditName => raygun::community::CommunityPermission::EditName,
+            CommunityPermission::EditDescription => {
+                raygun::community::CommunityPermission::EditDescription
+            }
+            CommunityPermission::EditIcon => raygun::community::CommunityPermission::EditIcon,
+            CommunityPermission::EditBanner => raygun::community::CommunityPermission::EditBanner,
+            CommunityPermission::CreateRoles => raygun::community::CommunityPermission::CreateRoles,
+            CommunityPermission::EditRoles => raygun::community::CommunityPermission::EditRoles,
+            CommunityPermission::DeleteRoles => raygun::community::CommunityPermission::DeleteRoles,
+            CommunityPermission::GrantRoles => raygun::community::CommunityPermission::GrantRoles,
+            CommunityPermission::RevokeRoles => raygun::community::CommunityPermission::RevokeRoles,
+            CommunityPermission::GrantPermissions => {
+                raygun::community::CommunityPermission::GrantPermissions
+            }
+            CommunityPermission::RevokePermissions => {
+                raygun::community::CommunityPermission::RevokePermissions
+            }
+            CommunityPermission::CreateInvites => {
+                raygun::community::CommunityPermission::CreateInvites
+            }
+            CommunityPermission::EditInvites => raygun::community::CommunityPermission::EditInvites,
+            CommunityPermission::DeleteInvites => {
+                raygun::community::CommunityPermission::DeleteInvites
+            }
+            CommunityPermission::CreateChannels => {
+                raygun::community::CommunityPermission::CreateChannels
+            }
+            CommunityPermission::EditChannels => {
+                raygun::community::CommunityPermission::EditChannels
+            }
+            CommunityPermission::DeleteChannels => {
+                raygun::community::CommunityPermission::DeleteChannels
+            }
+            CommunityPermission::RemoveMembers => {
+                raygun::community::CommunityPermission::RemoveMembers
+            }
+            CommunityPermission::DeleteMessages => {
+                raygun::community::CommunityPermission::DeleteMessages
+            }
+            CommunityPermission::PinMessages => raygun::community::CommunityPermission::PinMessages,
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub enum CommunityChannelPermission {
+    ViewChannel,
+    SendMessages,
+    SendAttachments,
+}
+
+impl From<CommunityChannelPermission> for raygun::community::CommunityChannelPermission {
+    fn from(value: CommunityChannelPermission) -> Self {
+        match value {
+            CommunityChannelPermission::ViewChannel => {
+                raygun::community::CommunityChannelPermission::ViewChannel
+            }
+            CommunityChannelPermission::SendMessages => {
+                raygun::community::CommunityChannelPermission::SendMessages
+            }
+            CommunityChannelPermission::SendAttachments => {
+                raygun::community::CommunityChannelPermission::SendAttachments
+            }
         }
     }
 }
