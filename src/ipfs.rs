@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+use std::str::FromStr;
 
 #[wasm_bindgen]
 pub struct WarpIpfs;
@@ -54,6 +55,16 @@ impl Config {
 
     pub fn with_thumbnail_exact_format(&mut self, exact: bool) {
         self.0.with_thumbnail_exact_format(exact);
+    }
+
+    /// Enable shuttle discovery with a list of validated addresses
+    pub fn enable_shuttle_discovery(&mut self, addresses: Vec<String>) {
+        self.0.store_setting_mut().discovery = warp_ipfs::config::Discovery::Shuttle {
+            addresses: addresses
+                .into_iter()
+                .filter_map(|addr| FromStr::from_str(&addr).ok()) // Validate each address
+                .collect(),
+        };
     }
 
     pub fn development() -> Config {
