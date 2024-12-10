@@ -1,5 +1,5 @@
 [package]
-name = "warp-ipfs"
+name = "warp-wasm"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,8 +14,8 @@ serde = { version = "1.0", features = ["derive", "rc"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
 
 # warp
-warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "82807960ca71e9ba72cf0326611ca3bf5dc22a66"}
-warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "82807960ca71e9ba72cf0326611ca3bf5dc22a66"}
+warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "1399e17461b76a6c5ba558f386f8e8c44ebd064c"}
+warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "1399e17461b76a6c5ba558f386f8e8c44ebd064c"}
 
 # wasm
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
