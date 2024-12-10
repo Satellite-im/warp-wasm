@@ -659,9 +659,9 @@ impl From<constellation::file::FileType> for FileType {
     }
 }
 
-impl Into<constellation::file::FileType> for FileType {
-    fn into(self) -> constellation::file::FileType {
-        match self {
+impl From<FileType> for constellation::file::FileType {
+    fn from(value: FileType) -> Self {
+        match value {
             FileType::Generic => constellation::file::FileType::Generic,
             FileType::Mime(media_type_buf) => {
                 constellation::file::FileType::Mime(media_type_buf.parse().unwrap())

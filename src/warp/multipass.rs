@@ -131,8 +131,15 @@ impl MultiPassBox {
 
     /// Manually export identity to a specific location
     /// If exporting to memory will return the memory buffer for it
-    pub async fn export_identity(&mut self, memory: Option<bool>) -> Result<Option<Vec<u8>>, JsError> {
-        let mut buffer: Option<Vec<u8>> = if memory.unwrap_or_default() { Some(vec![]) } else { None };
+    pub async fn export_identity(
+        &mut self,
+        memory: Option<bool>,
+    ) -> Result<Option<Vec<u8>>, JsError> {
+        let mut buffer: Option<Vec<u8>> = if memory.unwrap_or_default() {
+            Some(vec![])
+        } else {
+            None
+        };
         let loc: multipass::ImportLocation = match buffer.as_mut() {
             Some(buffer) => multipass::ImportLocation::Memory { buffer },
             None => multipass::ImportLocation::Remote,
@@ -348,9 +355,9 @@ pub enum IdentityUpdate {
     ClearStatusMessage,
 }
 
-impl Into<identity::IdentityUpdate> for IdentityUpdate {
-    fn into(self) -> identity::IdentityUpdate {
-        match self {
+impl From<IdentityUpdate> for identity::IdentityUpdate {
+    fn from(value: IdentityUpdate) -> Self {
+        match value {
             IdentityUpdate::Username(name) => identity::IdentityUpdate::Username(name),
             IdentityUpdate::Picture(data) => identity::IdentityUpdate::Picture(data),
             IdentityUpdate::PicturePath(path) => identity::IdentityUpdate::PicturePath(path),
@@ -384,9 +391,9 @@ pub enum Identifier {
     Username(String),
 }
 
-impl Into<identity::Identifier> for Identifier {
-    fn into(self) -> identity::Identifier {
-        match self {
+impl From<Identifier> for identity::Identifier {
+    fn from(value: Identifier) -> Self {
+        match value {
             Identifier::DID(did) => identity::Identifier::DID(DID::from_str(&did).unwrap()),
             Identifier::DIDList(vec) => identity::Identifier::DIDList(
                 vec.into_iter()
@@ -570,7 +577,7 @@ impl Identity {
         self.0.username().to_string()
     }
     pub fn status_message(&self) -> Option<String> {
-        self.0.status_message().map(|s|s.to_string())
+        self.0.status_message().map(|s| s.to_string())
     }
     pub fn short_id(&self) -> String {
         format!("{}", self.0.short_id())
