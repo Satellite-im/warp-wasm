@@ -19,9 +19,9 @@ fn main() {
     let cmd = get_cmd("cargo install wasm-pack");
     spawn_and_wait(cmd);
 
-    println!("\nBuilding warp-ipfs wasm files ...");
+    println!("\nBuilding warp wasm files ...");
     let cmd =
-        get_cmd("wasm-pack build --target web --out-dir examples/from-js/built-wasm/warp-ipfs");
+        get_cmd("wasm-pack build --target web --out-dir examples/from-js/built-wasm/warp-wasm");
     spawn_and_wait(cmd);
 
     println!("\nStarting file server ...");

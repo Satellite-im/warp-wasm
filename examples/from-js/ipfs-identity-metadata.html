@@ -5,7 +5,7 @@
     <title>Warp Wasm Test</title>
   </head>
   <script type="module">
-    import init, * as wasm from './built-wasm/warp-ipfs/warp_ipfs.js';
+    import init, * as wasm from './built-wasm/warp-wasm/warp_wasm.js';
     init().then(async (_exports) => {
       let ipfs = await new wasm.WarpIpfs(wasm.Config.minimal_testing(), null)
       let multipass = ipfs.multipass
