@@ -157,6 +157,7 @@ impl RayGunBox {
     }
 
     /// Retrieve all message references from a conversation
+    /// Stream values are {@link MessageReference}
     pub async fn get_message_references(
         &self,
         conversation_id: String,
@@ -487,6 +488,7 @@ impl RayGunBox {
 
     /// Stream a file that been attached to a message
     /// Note: Must use the filename associated when downloading
+    /// Async results are a byte array
     pub async fn download_stream(
         &self,
         conversation_id: String,
@@ -517,6 +519,8 @@ impl RayGunBox {
 #[wasm_bindgen]
 impl RayGunBox {
     /// Subscribe to an stream of events from the conversation
+    /// Async results are of type MessageEventKind
+    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L47
     pub async fn get_conversation_stream(
         &mut self,
         conversation_id: String,
@@ -533,6 +537,8 @@ impl RayGunBox {
     }
 
     /// Subscribe to an stream of events
+    /// Async results are of type RayGunEventKind
+    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L33
     pub async fn raygun_subscribe(&mut self) -> Result<AsyncIterator, JsError> {
         self.inner
             .raygun_subscribe()
@@ -549,6 +555,8 @@ impl RayGunBox {
 /// impl RayGunCommunity trait
 #[wasm_bindgen]
 impl RayGunBox {
+    /// Async results are of type MessageEventKind
+    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L47
     pub async fn get_community_stream(
         &mut self,
         community_id: String,
@@ -1101,6 +1109,7 @@ impl RayGunBox {
             .map_err(|e| e.into())
             .map(|inner| MessageReference { inner })
     }
+    /// Stream values are {@link MessageReference}
     pub async fn get_community_channel_message_references(
         &self,
         community_id: String,
@@ -1460,6 +1469,8 @@ impl Messages {
         }
     }
     /// Return the next element of the stream if this is a stream variant
+    /// Async results are of type warp::raygun::Message
+    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L1076
     pub async fn next_stream(&mut self) -> std::result::Result<Promise, JsError> {
         if let Some(s) = self.stream.as_mut() {
             return s.next().await;
@@ -1762,6 +1773,9 @@ impl AttachmentResult {
         self.message_id.clone()
     }
 
+    /// Returns the next progress
+    /// The result is of type warp::raygun::AttachmentKind
+    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L306
     pub async fn next(&mut self) -> std::result::Result<Promise, JsError> {
         self.stream.next().await
     }
