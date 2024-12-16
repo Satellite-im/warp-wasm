@@ -577,7 +577,7 @@ impl RayGunBox {
             .create_community(&name)
             .await
             .map_err(|e| e.into())
-            .map(|inner| Community { inner })
+            .map(|inner| inner.into())
     }
     pub async fn delete_community(&mut self, community_id: String) -> Result<(), JsError> {
         self.inner
@@ -590,7 +590,7 @@ impl RayGunBox {
             .get_community(Uuid::from_str(&community_id).unwrap())
             .await
             .map_err(|e| e.into())
-            .map(|inner| Community { inner })
+            .map(|inner| inner.into())
     }
 
     pub async fn list_communities_joined(&self) -> Result<Vec<String>, JsError> {
@@ -833,7 +833,7 @@ impl RayGunBox {
             )
             .await
             .map_err(|e| e.into())
-            .map(|inner| CommunityChannel { inner })
+            .map(|inner| inner.into())
     }
     pub async fn delete_community_channel(
         &mut self,
@@ -860,7 +860,7 @@ impl RayGunBox {
             )
             .await
             .map_err(|e| e.into())
-            .map(|inner| CommunityChannel { inner })
+            .map(|inner| inner.into())
     }
 
     pub async fn edit_community_name(
@@ -2044,10 +2044,60 @@ impl From<MessagesType> for raygun::MessagesType {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = "Map<CommunityPermission, string[]>")]
+    pub type CommunityPermissions;
+}
+
 #[wasm_bindgen]
 pub struct Community {
-    inner: raygun::community::Community,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub id: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub name: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub description: Option<String>,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub creator: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub created: js_sys::Date,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub modified: js_sys::Date,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub members: Vec<String>,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub channels: Vec<String>,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub roles: Vec<String>,
+    permissions: raygun::community::CommunityPermissions,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub invites: Vec<String>,
+}
+
+impl From<raygun::community::Community> for Community {
+    fn from(value: raygun::community::Community) -> Self {
+        Community {
+            id: value.id().into(),
+            name: value.name().into(),
+            description: value.description().map(|d| d.into()),
+            creator: value.creator().to_string(),
+            created: value.created().into(),
+            modified: value.modified().into(),
+            members: value.members().iter().map(|m| m.to_string()).collect(),
+            channels: value.channels().iter().map(|v| v.to_string()).collect(),
+            roles: value.roles().iter().map(|v| v.to_string()).collect(),
+            permissions: value.permissions().clone(),
+            invites: value.invites().iter().map(|v| v.to_string()).collect(),
+        }
+    }
+}
+
+#[wasm_bindgen]
+impl Community {
+    pub fn permissions(&self) -> CommunityPermissions {
+        CommunityPermissions::from(serde_wasm_bindgen::to_value(&self.permissions).unwrap())
+    }
 }
 
 #[wasm_bindgen]
@@ -2114,16 +2164,67 @@ impl From<raygun::community::CommunityRole> for CommunityRole {
         }
     }
 }
-#[derive(Serialize, Deserialize)]
+
 #[wasm_bindgen]
-pub struct CommunityChannel {
-    inner: raygun::community::CommunityChannel,
+extern "C" {
+    #[wasm_bindgen(typescript_type = "Map<CommunityChannelPermission, string[]>")]
+    pub type CommunityChannelPermissions;
 }
 
+#[wasm_bindgen]
+pub struct CommunityChannel {
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub id: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub name: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub description: Option<String>,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub created: js_sys::Date,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub modified: js_sys::Date,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub channel_type: CommunityChannelType,
+    permissions: raygun::community::CommunityChannelPermissions,
+}
+
+impl From<raygun::community::CommunityChannel> for CommunityChannel {
+    fn from(value: raygun::community::CommunityChannel) -> Self {
+        CommunityChannel {
+            id: value.id().into(),
+            name: value.name().into(),
+            description: value.description().map(|d| d.into()),
+            created: value.created().into(),
+            modified: value.modified().into(),
+            channel_type: value.channel_type().into(),
+            permissions: value.permissions().clone(),
+        }
+    }
+}
+
+#[wasm_bindgen]
+impl CommunityChannel {
+    pub fn permissions(&self) -> CommunityChannelPermissions {
+        CommunityChannelPermissions::from(serde_wasm_bindgen::to_value(&self.permissions).unwrap())
+    }
+}
+
+#[derive(Clone, Copy)]
 #[wasm_bindgen]
 pub enum CommunityChannelType {
     Standard,
     VoiceEnabled,
+}
+
+impl From<raygun::community::CommunityChannelType> for CommunityChannelType {
+    fn from(value: raygun::community::CommunityChannelType) -> Self {
+        match value {
+            raygun::community::CommunityChannelType::Standard => CommunityChannelType::Standard,
+            raygun::community::CommunityChannelType::VoiceEnabled => {
+                CommunityChannelType::VoiceEnabled
+            }
+        }
+    }
 }
 
 impl From<CommunityChannelType> for raygun::community::CommunityChannelType {
