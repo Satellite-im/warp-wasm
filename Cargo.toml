@@ -14,8 +14,8 @@ serde = { version = "1.0", features = ["derive", "rc"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
 
 # warp
-warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "1399e17461b76a6c5ba558f386f8e8c44ebd064c"}
-warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "1399e17461b76a6c5ba558f386f8e8c44ebd064c"}
+warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "fdb96da58174b41548992b3dcaba40a01b10ecf9"}
+warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "fdb96da58174b41548992b3dcaba40a01b10ecf9"}
 
 # wasm
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
