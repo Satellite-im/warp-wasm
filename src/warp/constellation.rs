@@ -88,6 +88,9 @@ impl ConstellationBox {
             .map(|ok| ok.to_vec())
     }
 
+    /// Returns a progression stream
+    /// The result of the stream is of type {@link Progression}
+    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L306
     pub async fn put_stream(
         &mut self,
         name: &str,
@@ -107,6 +110,8 @@ impl ConstellationBox {
             })
     }
 
+    /// Returns a file stream
+    /// Each stream element is a byte array chunk of the file
     pub async fn get_stream(&self, name: &str) -> Result<AsyncIterator, JsError> {
         self.inner
             .get_stream(name)

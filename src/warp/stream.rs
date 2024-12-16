@@ -5,6 +5,7 @@ use std::task::{Context, Poll};
 use wasm_bindgen::prelude::*;
 
 /// Wraps BoxStream<'static, TesseractEvent> into a js compatible struct
+/// Currently there is no generic way for this so on JS-side this returns any
 #[wasm_bindgen]
 pub struct AsyncIterator {
     inner: BoxStream<'static, JsValue>,
@@ -18,6 +19,8 @@ impl AsyncIterator {
 /// Provides the next() function expected by js async iterator
 #[wasm_bindgen]
 impl AsyncIterator {
+    /// Next value in this iterator. Due to wasm limitations can only return any type
+    /// Refer to implementations for more info
     pub async fn next(&mut self) -> std::result::Result<Promise, JsError> {
         let next = self.inner.next().await;
         match next {

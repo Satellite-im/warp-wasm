@@ -91,6 +91,9 @@ impl MultiPassBox {
 /// impl MultiPassEvent trait
 #[wasm_bindgen]
 impl MultiPassBox {
+    /// Subscribe to multipass events returning a stream of multipass events
+    /// The result is of type warp::multipass::MultiPassEventKind
+    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/multipass/mod.rs#L28
     pub async fn multipass_subscribe(&mut self) -> Result<AsyncIterator, JsError> {
         self.inner
             .multipass_subscribe()
