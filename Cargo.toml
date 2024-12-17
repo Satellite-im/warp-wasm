@@ -29,6 +29,7 @@ send_wrapper = "0.6.0"
 web-sys = "0.3"
 js-sys = "0.3"
 tsify-next = "0.5.4"
+macro_utils = { path = "./macro-utils" }
 
 # examples
 tiny_file_server = "0.1.5"
