@@ -229,25 +229,23 @@ fn convert_field(
     } else {
         false
     };
-    let converter = |opt: Option<Path>| {
+    let converter = |opt: Option<ConversionAtt>| {
         if let Some(p) = opt {
-            quote! {
-                #p(#variable_ref)
-            }
+            p.as_token(&variable_ref)
         } else {
             if is_string {
-                quote! {
+                Ok(quote! {
                     #variable_ref.to_string()
-                }
+                })
             } else {
-                quote! {
+                Ok(quote! {
                     #variable_ref.into()
-                }
+                })
             }
         }
     };
-    let mut from = converter(conv.from);
-    let mut to = converter(conv.to);
+    let mut from = converter(conv.from)?;
+    let mut to = converter(conv.to)?;
     if let Some(ident) = &field.ident {
         from = quote! {
             #ident: #from
@@ -259,11 +257,14 @@ fn convert_field(
     Ok((from, to))
 }
 
-fn get_path(meta: &Meta) -> Result<Path> {
+fn get_path(meta: &Meta) -> Result<ConversionAtt> {
     if let Meta::NameValue(meta) = &meta {
         if let Expr::Lit(expr) = &meta.value {
             if let Lit::Str(lit_str) = &expr.lit {
-                return lit_str.parse();
+                if let Ok(path) = lit_str.parse::<Path>() {
+                    return Ok(ConversionAtt::Path(path));
+                }
+                return Ok(ConversionAtt::Func(lit_str.value()));
             }
         }
     }
@@ -282,6 +283,28 @@ struct Conversion {
 }
 
 struct ConversionAttributes {
-    from: Option<Path>,
-    to: Option<Path>,
+    from: Option<ConversionAtt>,
+    to: Option<ConversionAtt>,
+}
+
+enum ConversionAtt {
+    Path(Path),
+    Func(String),
+}
+
+impl ConversionAtt {
+    fn as_token(
+        &self,
+        variable_ref: &proc_macro2::TokenStream,
+    ) -> Result<proc_macro2::TokenStream> {
+        match self {
+            ConversionAtt::Path(path) => Ok(quote! {
+                #path(#variable_ref)
+            }),
+            ConversionAtt::Func(func) => {
+                let s = func.replace("{value}", "value");
+                syn::parse_str(&s)
+            }
+        }
+    }
 }
