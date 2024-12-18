@@ -6,7 +6,11 @@ mod wasm_convert;
 
 /// Easy type conversion between enums and structs of similar structure
 /// Also allows specifying a function for conversion for types not implementing From already
-/// 
+/// Fields can accept an attribute with name "from" or "into" representing a conversion function.
+/// This value can either be a path to a function or some rust code. 
+/// The path need to accept a single value of the current type and output the target type
+/// Unnamed enum fields are referenced as f_0, f_1...
+/// E.g. `"{f_0}.converter_function()"`
 /// ```
 /// use macro_utils::FromTo;
 /// 
@@ -41,11 +45,11 @@ mod wasm_convert;
 /// #[from_to(A)]
 /// pub struct S3 {
 ///     // Pass in a custom conversion function. If not provided will use a From implementation
-///     #[from_to(from = "converter_function", to = "converter_function")]
+///     #[from_to(from = "converter_function_from", to = "converter_function_to")]
 ///     // Referencing the struct itself is also possible
 ///     #[from_to(from = "{value}.x.converter_function()", to = "{value}.x.converter_function()")]
 ///     x: String,
-///     #[from_to(from = "converter_function", to = "converter_function")]
+///     #[from_to(from = "converter_function_from", to = "converter_function_to")]
 ///     y: String
 /// }
 /// ```
