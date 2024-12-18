@@ -3,35 +3,31 @@ use quote::{format_ident, quote};
 use syn::{
     parse::{Parse, Parser},
     punctuated::Punctuated,
-    Data, DataEnum, DeriveInput, Error, Expr, Field, Fields, Lit, Meta, Path, Result, Token,
+    Attribute, Data, DataEnum, DeriveInput, Error, Expr, Field, Fields, Lit, Meta, Path, Result,
+    Token, Type,
 };
 
 const ATTRIBUTE_PATH: &str = "from_to";
 const ATTRIBUTE_FROM: &str = "from";
 const ATTRIBUTE_INTO: &str = "into";
+const ATTRIBUTE_ONLY: &str = "only";
 
 pub fn expand(input: TokenStream) -> Result<TokenStream> {
     let input: DeriveInput = DeriveInput::parse.parse(input.clone())?;
-    let target = if let Some(attr) = input.attrs.iter().find_map(|attr| {
+    let conv = if let Some(attr) = input.attrs.iter().find_map(|attr| {
         if attr.path().is_ident(ATTRIBUTE_PATH) {
             return Some(attr);
         }
         None
     }) {
-        let exp: Expr = attr
-            .parse_args()
-            .map_err(|_| (Error::new_spanned(attr, format!("Invalid target"))))?;
-        if let Expr::Path(path) = exp {
-            path
-        } else {
-            return Err(Error::new_spanned(attr, format!("Invalid target")));
-        }
+        parse_attributes(attr)?
     } else {
         return Err(Error::new_spanned(
             input,
             format!("Required target missing"),
         ));
     };
+    let target = conv.target;
 
     let name = &input.ident;
 
@@ -47,24 +43,28 @@ pub fn expand(input: TokenStream) -> Result<TokenStream> {
                 conv_from.push(conv.0);
                 conv_into.push(conv.1);
             }
-            quote! {
-                impl From<#target> for #name {
-                    fn from(value: #target) -> Self {
-                        Self {
-                            #(#conv_from),*
+            (
+                quote! {
+                    impl From<#target> for #name {
+                        fn from(value: #target) -> Self {
+                            Self {
+                                #(#conv_from),*
+                            }
                         }
                     }
-                }
-                impl From<#name> for #target {
-                    fn from(value: #name) -> Self {
-                        Self {
-                            #(#conv_into),*
+                },
+                quote! {
+                    impl From<#name> for #target {
+                        fn from(value: #name) -> Self {
+                            Self {
+                                #(#conv_into),*
+                            }
                         }
                     }
-                }
-            }
+                },
+            )
         }
-        Data::Enum(data_enum) => expand_enum(name, &target.path, data_enum)?,
+        Data::Enum(data_enum) => expand_enum(name, &target, data_enum)?,
         _ => {
             return Err(Error::new_spanned(
                 input,
@@ -72,14 +72,21 @@ pub fn expand(input: TokenStream) -> Result<TokenStream> {
             ));
         }
     };
-    Ok(TokenStream::from(expanded))
+    let mut stream = proc_macro2::TokenStream::new();
+    if matches!(conv.impls, Impls::All | Impls::FromOnly) {
+        stream.extend(expanded.0);
+    }
+    if matches!(conv.impls, Impls::All | Impls::IntoOnly) {
+        stream.extend(expanded.1);
+    }
+    Ok(TokenStream::from(stream))
 }
 
 fn expand_enum(
     name: &proc_macro2::Ident,
     target: &Path,
     data_enum: &DataEnum,
-) -> Result<proc_macro2::TokenStream> {
+) -> Result<(proc_macro2::TokenStream, proc_macro2::TokenStream)> {
     let mut from = vec![];
     let mut to = vec![];
     for v in data_enum.variants.iter() {
@@ -131,21 +138,58 @@ fn expand_enum(
             }
         }
     }
-    Ok(quote! {
-        impl From<#target> for #name {
-            fn from(value: #target) -> Self {
-                match value {
-                    #(#from)*
+    Ok((
+        quote! {
+            impl From<#target> for #name {
+                fn from(value: #target) -> Self {
+                    match value {
+                        #(#from)*
+                    }
                 }
             }
-        }
-        impl From<#name> for #target {
-            fn from(value: #name) -> Self {
-                match value {
-                    #(#to)*
+        },
+        quote! {
+            impl From<#name> for #target {
+                fn from(value: #name) -> Self {
+                    match value {
+                        #(#to)*
+                    }
                 }
             }
+        },
+    ))
+}
+
+fn parse_attributes(attr: &Attribute) -> Result<Conversion> {
+    let nested = attr
+        .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
+        .unwrap();
+    let mut path_r = None;
+    let mut impls = Impls::All;
+    for meta in nested {
+        match &meta {
+            Meta::NameValue(val) => {
+                if val.path.is_ident(ATTRIBUTE_ONLY) {
+                    if let Expr::Lit(lit) = &val.value {
+                        if let Lit::Str(s) = &lit.lit {
+                            if s.value().eq("into") {
+                                impls = Impls::IntoOnly
+                            } else if s.value().eq("from") {
+                                impls = Impls::FromOnly
+                            }
+                        }
+                    } else {
+                        return Err(Error::new_spanned(meta, format!("Invalid requirements")));
+                    }
+                }
+            }
+            Meta::Path(path) => path_r = Some(path.clone()),
+            _ => return Err(Error::new_spanned(&meta, format!("Unknown attribute"))),
         }
+    }
+    Ok(Conversion {
+        target: path_r.expect("No valid target provided"),
+        impls,
     })
 }
 
@@ -179,45 +223,37 @@ fn convert_field(
             to: None,
         }
     };
-    let from;
-    let to;
-    if let Some(ident) = &field.ident {
-        from = if let Some(p) = conv.from {
-            quote! {
-                #ident: #p(#variable_ref)
-            }
-        } else {
-            quote! {
-                #ident: #variable_ref.into()
-            }
-        };
-        to = if let Some(p) = conv.to {
-            quote! {
-                #ident: #p(#variable_ref)
-            }
-        } else {
-            quote! {
-                #ident: #variable_ref.into()
-            }
-        };
+    // If string use to_string()
+    let is_string = if let Type::Path(p) = &field.ty {
+        p.path.is_ident("String") | p.path.is_ident("std::string::String")
     } else {
-        from = if let Some(p) = conv.from {
+        false
+    };
+    let converter = |opt: Option<Path>| {
+        if let Some(p) = opt {
             quote! {
                 #p(#variable_ref)
             }
         } else {
-            quote! {
-                #variable_ref.into()
+            if is_string {
+                quote! {
+                    #variable_ref.to_string()
+                }
+            } else {
+                quote! {
+                    #variable_ref.into()
+                }
             }
+        }
+    };
+    let mut from = converter(conv.from);
+    let mut to = converter(conv.to);
+    if let Some(ident) = &field.ident {
+        from = quote! {
+            #ident: #from
         };
-        to = if let Some(p) = conv.to {
-            quote! {
-                #p(#variable_ref)
-            }
-        } else {
-            quote! {
-                #variable_ref.into()
-            }
+        to = quote! {
+            #ident: #to
         };
     }
     Ok((from, to))
@@ -232,6 +268,17 @@ fn get_path(meta: &Meta) -> Result<Path> {
         }
     }
     Err(Error::new_spanned(meta, "expected a path"))
+}
+
+enum Impls {
+    All,
+    FromOnly,
+    IntoOnly,
+}
+
+struct Conversion {
+    target: Path,
+    impls: Impls,
 }
 
 struct ConversionAttributes {
