@@ -23,7 +23,6 @@ mod wasm_convert;
 ///     SomeValue2
 /// }
 /// 
-/// 
 /// assert_eq!(A::SomeValue1, B::SomeValue1.into());
 /// 
 /// pub struct S1 {
@@ -41,7 +40,10 @@ mod wasm_convert;
 /// #[derive(FromTo)]
 /// #[from_to(A)]
 /// pub struct S3 {
+///     // Pass in a custom conversion function. If not provided will use a From implementation
 ///     #[from_to(from = "converter_function", to = "converter_function")]
+///     // Referencing the struct itself is also possible
+///     #[from_to(from = "{value}.x.converter_function()", to = "{value}.x.converter_function()")]
 ///     x: String,
 ///     #[from_to(from = "converter_function", to = "converter_function")]
 ///     y: String
