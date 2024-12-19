@@ -5,10 +5,15 @@ use proc_macro::TokenStream;
 mod wasm_convert;
 
 /// Easy type conversion between enums and structs of similar structure
+/// 
 /// Also allows specifying a function for conversion for types not implementing From already
+/// 
 /// Fields can accept an attribute with name "from" or "into" representing a conversion function.
+/// 
 /// This value can either be a path to a function or some rust code. 
+/// 
 /// The path need to accept a single value of the current type and output the target type
+/// 
 /// Unnamed enum fields are referenced as f_0, f_1...
 /// E.g. `"{f_0}.converter_function()"`
 /// ```
