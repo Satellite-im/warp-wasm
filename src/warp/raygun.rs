@@ -565,9 +565,9 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                AsyncIterator::new(Box::pin(
-                    ok.map(|s| serde_wasm_bindgen::to_value(&Into::<MessageEventKind>::into(s)).unwrap()),
-                ))
+                AsyncIterator::new(Box::pin(ok.map(|s| {
+                    serde_wasm_bindgen::to_value(&Into::<MessageEventKind>::into(s)).unwrap()
+                })))
             })
     }
 
@@ -1504,6 +1504,7 @@ impl Messages {
 
 #[derive(Tsify, Serialize, Deserialize, FromTo)]
 #[from_to(warp::raygun::RayGunEventKind, only = "from")]
+#[serde(tag = "kind", content = "values", rename_all = "snake_case")]
 pub enum RayGunEventKind {
     ConversationCreated {
         conversation_id: String,
@@ -1531,6 +1532,7 @@ pub enum RayGunEventKind {
 
 #[derive(Tsify, Serialize, Deserialize, FromTo)]
 #[from_to(warp::raygun::MessageEventKind, only = "from")]
+#[serde(tag = "kind", content = "values", rename_all = "snake_case")]
 pub enum MessageEventKind {
     MessageSent {
         conversation_id: String,

@@ -388,6 +388,7 @@ pub struct FriendRequest {
 
 #[derive(Tsify, Serialize, Deserialize, FromTo)]
 #[from_to(multipass::MultiPassEventKind, only = "from")]
+#[serde(tag = "kind", content = "values", rename_all="snake_case")]
 pub enum MultiPassEventKind {
     FriendRequestReceived {
         from: String,

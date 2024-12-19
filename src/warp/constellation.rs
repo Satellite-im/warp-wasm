@@ -91,7 +91,6 @@ impl ConstellationBox {
 
     /// Returns a progression stream
     /// The result of the stream is of type {@link Progression}
-    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L306
     pub async fn put_stream(
         &mut self,
         name: &str,
@@ -538,8 +537,9 @@ impl From<Item> for constellation::item::Item {
     }
 }
 
-#[derive(serde::Serialize, FromTo)]
+#[derive(Tsify, Serialize, FromTo)]
 #[from_to(constellation::Progression, only = "from")]
+#[serde(tag = "kind", content = "values", rename_all="snake_case")]
 pub enum Progression {
     CurrentProgress {
         /// name of the file
