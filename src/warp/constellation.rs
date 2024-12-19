@@ -1,5 +1,6 @@
 use crate::warp::stream::{AsyncIterator, InnerStream};
 use futures::StreamExt;
+use macro_utils::FromTo;
 use serde::{Deserialize, Serialize};
 use tsify_next::Tsify;
 use uuid::Uuid;
@@ -537,7 +538,8 @@ impl From<Item> for constellation::item::Item {
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, FromTo)]
+#[from_to(constellation::Progression, only = "from")]
 pub enum Progression {
     CurrentProgress {
         /// name of the file
@@ -568,49 +570,13 @@ pub enum Progression {
     },
 }
 
-impl From<constellation::Progression> for Progression {
-    fn from(value: constellation::Progression) -> Self {
-        match value {
-            constellation::Progression::CurrentProgress {
-                name,
-                current,
-                total,
-            } => Self::CurrentProgress {
-                name,
-                current,
-                total,
-            },
-            constellation::Progression::ProgressComplete { name, total } => {
-                Self::ProgressComplete { name, total }
-            }
-            constellation::Progression::ProgressFailed {
-                name,
-                last_size,
-                error,
-            } => Self::ProgressFailed {
-                name,
-                last_size,
-                error: error.to_string(),
-            },
-        }
-    }
-}
-
+#[derive(FromTo)]
+#[from_to(warp::constellation::item::ItemType)]
 #[wasm_bindgen]
 pub enum ItemType {
     FileItem,
     DirectoryItem,
     InvalidItem,
-}
-
-impl From<warp::constellation::item::ItemType> for ItemType {
-    fn from(value: warp::constellation::item::ItemType) -> Self {
-        match value {
-            constellation::item::ItemType::FileItem => ItemType::FileItem,
-            constellation::item::ItemType::DirectoryItem => ItemType::DirectoryItem,
-            constellation::item::ItemType::InvalidItem => ItemType::InvalidItem,
-        }
-    }
 }
 
 #[wasm_bindgen]
@@ -635,42 +601,10 @@ impl From<Hash> for warp::constellation::file::Hash {
     }
 }
 
-#[derive(Tsify, Deserialize, Serialize)]
+#[derive(Tsify, Clone, Deserialize, Serialize, FromTo)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
+#[from_to(constellation::file::FileType)]
 pub enum FileType {
     Generic,
-    Mime(String),
-}
-
-impl From<&constellation::file::FileType> for FileType {
-    fn from(value: &constellation::file::FileType) -> Self {
-        match value {
-            constellation::file::FileType::Generic => FileType::Generic,
-            constellation::file::FileType::Mime(media_type_buf) => {
-                FileType::Mime(media_type_buf.to_string())
-            }
-        }
-    }
-}
-
-impl From<constellation::file::FileType> for FileType {
-    fn from(value: constellation::file::FileType) -> Self {
-        match value {
-            constellation::file::FileType::Generic => FileType::Generic,
-            constellation::file::FileType::Mime(media_type_buf) => {
-                FileType::Mime(media_type_buf.to_string())
-            }
-        }
-    }
-}
-
-impl From<FileType> for constellation::file::FileType {
-    fn from(value: FileType) -> Self {
-        match value {
-            FileType::Generic => constellation::file::FileType::Generic,
-            FileType::Mime(media_type_buf) => {
-                constellation::file::FileType::Mime(media_type_buf.parse().unwrap())
-            }
-        }
-    }
+    Mime(#[from_to(from = "{f_0}.parse().unwrap()")] String),
 }

@@ -2,6 +2,7 @@ use crate::warp::stream::AsyncIterator;
 use futures::StreamExt;
 use indexmap::IndexMap;
 use js_sys::Map;
+use macro_utils::FromTo;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use tsify_next::Tsify;
@@ -92,17 +93,16 @@ impl MultiPassBox {
 #[wasm_bindgen]
 impl MultiPassBox {
     /// Subscribe to multipass events returning a stream of multipass events
-    /// The result is of type warp::multipass::MultiPassEventKind
-    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/multipass/mod.rs#L28
+    /// The result is of type {@link MultiPassEventKind}
     pub async fn multipass_subscribe(&mut self) -> Result<AsyncIterator, JsError> {
         self.inner
             .multipass_subscribe()
             .await
             .map_err(|e| e.into())
             .map(|s| {
-                AsyncIterator::new(Box::pin(
-                    s.map(|t| Into::<MultiPassEventKind>::into(t).into()),
-                ))
+                AsyncIterator::new(Box::pin(s.map(|t| {
+                    serde_wasm_bindgen::to_value(&Into::<MultiPassEventKind>::into(t)).unwrap()
+                })))
             })
     }
 }
@@ -292,7 +292,7 @@ impl MultiPassBox {
             .identity_picture(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
-            .map(|i| IdentityImage(i))
+            .map(|i| i.into())
     }
 
     /// Profile banner belonging to the `Identity`
@@ -301,7 +301,7 @@ impl MultiPassBox {
             .identity_banner(&DID::from_str(&did).unwrap_or_default())
             .await
             .map_err(|e| e.into())
-            .map(|i| IdentityImage(i))
+            .map(|i| i.into())
     }
 
     /// Identity status to determine if they are online or offline
@@ -340,7 +340,8 @@ impl MultiPassBox {
     }
 }
 
-#[derive(Tsify, Deserialize, Serialize)]
+#[derive(Tsify, Deserialize, Serialize, FromTo)]
+#[from_to(identity::IdentityUpdate, only = "into")]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum IdentityUpdate {
     Username(String),
@@ -348,7 +349,7 @@ pub enum IdentityUpdate {
     PicturePath(std::path::PathBuf),
     // PictureStream(BoxStream<'static, Result<Vec<u8>, std::io::Error>>),
     AddMetadataKey { key: String, value: String },
-    RemoveMetadataKey(String),
+    RemoveMetadataKey { key: String },
     ClearPicture,
     Banner(Vec<u8>),
     BannerPath(std::path::PathBuf),
@@ -358,211 +359,97 @@ pub enum IdentityUpdate {
     ClearStatusMessage,
 }
 
-impl From<IdentityUpdate> for identity::IdentityUpdate {
-    fn from(value: IdentityUpdate) -> Self {
-        match value {
-            IdentityUpdate::Username(name) => identity::IdentityUpdate::Username(name),
-            IdentityUpdate::Picture(data) => identity::IdentityUpdate::Picture(data),
-            IdentityUpdate::PicturePath(path) => identity::IdentityUpdate::PicturePath(path),
-            // IdentityUpdate::PictureStream => Ok(identity::IdentityUpdate::PictureStream(
-            //     value.into()
-            // )),
-            IdentityUpdate::ClearPicture => identity::IdentityUpdate::ClearPicture,
-            IdentityUpdate::Banner(data) => identity::IdentityUpdate::Banner(data),
-            IdentityUpdate::BannerPath(path) => identity::IdentityUpdate::BannerPath(path),
-            // // IdentityUpdate::BannerStream => Ok(identity::IdentityUpdate::BannerStream(
-            // //     value.into()
-            // // )),
-            IdentityUpdate::ClearBanner => identity::IdentityUpdate::ClearBanner,
-            IdentityUpdate::StatusMessage(value) => identity::IdentityUpdate::StatusMessage(value),
-            IdentityUpdate::ClearStatusMessage => identity::IdentityUpdate::ClearStatusMessage,
-            IdentityUpdate::AddMetadataKey { key, value } => {
-                identity::IdentityUpdate::AddMetadataKey { key, value }
-            }
-            IdentityUpdate::RemoveMetadataKey(key) => {
-                identity::IdentityUpdate::RemoveMetadataKey { key }
-            }
-        }
-    }
-}
-
-#[derive(Tsify, Deserialize, Serialize)]
+#[derive(Tsify, Deserialize, Serialize, FromTo)]
+#[from_to(identity::Identifier, only = "into")]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Identifier {
-    DID(String),
-    DIDList(Vec<String>),
+    DID(#[from_to(from = "DID::from_str(&f_0).unwrap()")] String),
+    DIDList(#[from_to(from = "to_did_vec")] Vec<String>),
     Username(String),
 }
 
-impl From<Identifier> for identity::Identifier {
-    fn from(value: Identifier) -> Self {
-        match value {
-            Identifier::DID(did) => identity::Identifier::DID(DID::from_str(&did).unwrap()),
-            Identifier::DIDList(vec) => identity::Identifier::DIDList(
-                vec.into_iter()
-                    .map(|did| DID::from_str(&did).unwrap())
-                    .collect(),
-            ),
-            Identifier::Username(name) => identity::Identifier::Username(name),
-        }
-    }
+fn to_did_vec(dids: Vec<String>) -> Vec<DID> {
+    dids.into_iter()
+        .map(|did| DID::from_str(&did).unwrap())
+        .collect()
 }
 
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(multipass::identity::FriendRequest, only = "from")]
 pub struct FriendRequest {
-    identity: String,
-    date: js_sys::Date,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    #[from_to(from = "{value}.identity().to_string()")]
+    pub identity: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    #[from_to(from = "{value}.date().into()")]
+    pub date: js_sys::Date,
+}
+
+#[derive(Tsify, Serialize, Deserialize, FromTo)]
+#[from_to(multipass::MultiPassEventKind, only = "from")]
+pub enum MultiPassEventKind {
+    FriendRequestReceived {
+        from: String,
+        #[tsify(type = "Date")]
+        date: String,
+    },
+    FriendRequestSent {
+        to: String,
+        #[tsify(type = "Date")]
+        date: String,
+    },
+    IncomingFriendRequestRejected {
+        did: String,
+    },
+    OutgoingFriendRequestRejected {
+        did: String,
+    },
+    IncomingFriendRequestClosed {
+        did: String,
+    },
+    OutgoingFriendRequestClosed {
+        did: String,
+    },
+    FriendAdded {
+        did: String,
+    },
+    FriendRemoved {
+        did: String,
+    },
+    IdentityOnline {
+        did: String,
+    },
+    IdentityOffline {
+        did: String,
+    },
+    IdentityUpdate {
+        did: String,
+    },
+    Blocked {
+        did: String,
+    },
+    BlockedBy {
+        did: String,
+    },
+    Unblocked {
+        did: String,
+    },
+    UnblockedBy {
+        did: String,
+    },
 }
 
 #[wasm_bindgen]
-impl FriendRequest {
-    #[wasm_bindgen(getter)]
-    pub fn identity(&self) -> String {
-        self.identity.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn date(&self) -> js_sys::Date {
-        self.date.clone()
-    }
-}
-
-impl From<multipass::identity::FriendRequest> for FriendRequest {
-    fn from(value: multipass::identity::FriendRequest) -> Self {
-        FriendRequest {
-            identity: value.identity().to_string(),
-            date: value.date().into(),
-        }
-    }
-}
-
-#[wasm_bindgen]
-pub struct MultiPassEventKind {
-    kind: MultiPassEventKindEnum,
-    did: String,
-}
-
-#[wasm_bindgen]
-impl MultiPassEventKind {
-    #[wasm_bindgen(getter)]
-    pub fn kind(&self) -> MultiPassEventKindEnum {
-        self.kind
-    }
-    #[wasm_bindgen(getter)]
-    pub fn did(&self) -> String {
-        self.did.clone()
-    }
-}
-
-impl From<multipass::MultiPassEventKind> for MultiPassEventKind {
-    fn from(value: multipass::MultiPassEventKind) -> Self {
-        match value {
-            multipass::MultiPassEventKind::FriendRequestReceived { from, .. } => {
-                MultiPassEventKind {
-                    kind: MultiPassEventKindEnum::FriendRequestReceived,
-                    did: from.to_string(),
-                }
-            }
-            multipass::MultiPassEventKind::FriendRequestSent { to, .. } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::FriendRequestSent,
-                did: to.to_string(),
-            },
-            multipass::MultiPassEventKind::IncomingFriendRequestRejected { did } => {
-                MultiPassEventKind {
-                    kind: MultiPassEventKindEnum::IncomingFriendRequestRejected,
-                    did: did.to_string(),
-                }
-            }
-            multipass::MultiPassEventKind::OutgoingFriendRequestRejected { did } => {
-                MultiPassEventKind {
-                    kind: MultiPassEventKindEnum::OutgoingFriendRequestRejected,
-                    did: did.to_string(),
-                }
-            }
-            multipass::MultiPassEventKind::IncomingFriendRequestClosed { did } => {
-                MultiPassEventKind {
-                    kind: MultiPassEventKindEnum::IncomingFriendRequestClosed,
-                    did: did.to_string(),
-                }
-            }
-            multipass::MultiPassEventKind::OutgoingFriendRequestClosed { did } => {
-                MultiPassEventKind {
-                    kind: MultiPassEventKindEnum::OutgoingFriendRequestClosed,
-                    did: did.to_string(),
-                }
-            }
-            multipass::MultiPassEventKind::FriendAdded { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::FriendAdded,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::FriendRemoved { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::FriendRemoved,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::IdentityOnline { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::IdentityOnline,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::IdentityOffline { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::IdentityOffline,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::IdentityUpdate { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::IdentityUpdate,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::Blocked { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::Blocked,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::BlockedBy { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::BlockedBy,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::Unblocked { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::Unblocked,
-                did: did.to_string(),
-            },
-            multipass::MultiPassEventKind::UnblockedBy { did } => MultiPassEventKind {
-                kind: MultiPassEventKindEnum::UnblockedBy,
-                did: did.to_string(),
-            },
-        }
-    }
-}
-
-#[derive(Copy, Clone)]
-#[wasm_bindgen]
-pub enum MultiPassEventKindEnum {
-    FriendRequestReceived,
-    FriendRequestSent,
-    IncomingFriendRequestRejected,
-    OutgoingFriendRequestRejected,
-    IncomingFriendRequestClosed,
-    OutgoingFriendRequestClosed,
-    FriendAdded,
-    FriendRemoved,
-    IdentityOnline,
-    IdentityOffline,
-    IdentityUpdate,
-    Blocked,
-    BlockedBy,
-    Unblocked,
-    UnblockedBy,
-}
-
-#[wasm_bindgen]
-pub struct IdentityImage(identity::IdentityImage);
-
-#[wasm_bindgen]
-impl IdentityImage {
-    pub fn data(&self) -> Vec<u8> {
-        self.0.data().to_vec()
-    }
-
-    pub fn image_type(&self) -> FileType {
-        self.0.image_type().into()
-    }
+#[derive(FromTo)]
+#[from_to(warp::multipass::identity::IdentityImage, only = "from")]
+pub struct IdentityImage {
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    #[from_to(from = "{value}.data().to_vec()")]
+    pub data: Vec<u8>,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    #[from_to(from = "{value}.image_type().clone().into()")]
+    pub image_type: FileType,
 }
 
 #[wasm_bindgen]
@@ -637,31 +524,19 @@ impl From<warp::multipass::identity::Identity> for Identity {
 }
 
 #[wasm_bindgen]
-pub struct Relationship(warp::multipass::identity::Relationship);
-
-#[wasm_bindgen]
-impl Relationship {
-    pub fn friends(&self) -> bool {
-        self.0.friends()
-    }
-    pub fn received_friend_request(&self) -> bool {
-        self.0.received_friend_request()
-    }
-    pub fn sent_friend_request(&self) -> bool {
-        self.0.sent_friend_request()
-    }
-    pub fn blocked(&self) -> bool {
-        self.0.blocked()
-    }
-    pub fn blocked_by(&self) -> bool {
-        self.0.blocked_by()
-    }
-}
-
-impl From<warp::multipass::identity::Relationship> for Relationship {
-    fn from(value: warp::multipass::identity::Relationship) -> Self {
-        Relationship(value)
-    }
+#[derive(FromTo)]
+#[from_to(warp::multipass::identity::Relationship, only = "from")]
+pub struct Relationship {
+    #[from_to(from = "{value}.friends()")]
+    pub friends: bool,
+    #[from_to(from = "{value}.received_friend_request()")]
+    pub received_friend_request: bool,
+    #[from_to(from = "{value}.sent_friend_request()")]
+    pub sent_friend_request: bool,
+    #[from_to(from = "{value}.blocked()")]
+    pub blocked: bool,
+    #[from_to(from = "{value}.blocked_by()")]
+    pub blocked_by: bool,
 }
 
 #[wasm_bindgen]
@@ -684,6 +559,8 @@ impl From<warp::multipass::identity::IdentityProfile> for IdentityProfile {
 }
 
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(warp::multipass::identity::Platform)]
 pub enum Platform {
     Desktop,
     Mobile,
@@ -691,45 +568,14 @@ pub enum Platform {
     Unknown,
 }
 
-impl From<warp::multipass::identity::Platform> for Platform {
-    fn from(value: warp::multipass::identity::Platform) -> Self {
-        match value {
-            identity::Platform::Desktop => Platform::Desktop,
-            identity::Platform::Mobile => Platform::Mobile,
-            identity::Platform::Web => Platform::Web,
-            identity::Platform::Unknown => Platform::Unknown,
-        }
-    }
-}
-
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(warp::multipass::identity::IdentityStatus)]
 pub enum IdentityStatus {
     Online,
     Away,
     Busy,
     Offline,
-}
-
-impl From<warp::multipass::identity::IdentityStatus> for IdentityStatus {
-    fn from(value: warp::multipass::identity::IdentityStatus) -> Self {
-        match value {
-            identity::IdentityStatus::Online => IdentityStatus::Online,
-            identity::IdentityStatus::Away => IdentityStatus::Away,
-            identity::IdentityStatus::Busy => IdentityStatus::Busy,
-            identity::IdentityStatus::Offline => IdentityStatus::Offline,
-        }
-    }
-}
-
-impl From<IdentityStatus> for warp::multipass::identity::IdentityStatus {
-    fn from(value: IdentityStatus) -> Self {
-        match value {
-            IdentityStatus::Online => identity::IdentityStatus::Online,
-            IdentityStatus::Away => identity::IdentityStatus::Away,
-            IdentityStatus::Busy => identity::IdentityStatus::Busy,
-            IdentityStatus::Offline => identity::IdentityStatus::Offline,
-        }
-    }
 }
 
 #[wasm_bindgen]
