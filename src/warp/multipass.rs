@@ -391,13 +391,13 @@ pub struct FriendRequest {
 pub enum MultiPassEventKind {
     FriendRequestReceived {
         from: String,
-        #[tsify(type = "Date")]
-        date: String,
+        #[serde(with = "serde_wasm_bindgen::preserve")]
+        date: js_sys::Date,
     },
     FriendRequestSent {
         to: String,
-        #[tsify(type = "Date")]
-        date: String,
+        #[serde(with = "serde_wasm_bindgen::preserve")]
+        date: js_sys::Date,
     },
     IncomingFriendRequestRejected {
         did: String,
