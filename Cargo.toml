@@ -11,7 +11,7 @@ bytes = { version = "1", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
 serde = { version = "1.0", features = ["derive", "rc"] }
-indexmap = { version = "2.2.6", features = ["serde"] }
+indexmap = { version = "2.7.0", features = ["serde"] }
 
 # warp
 warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "fdb96da58174b41548992b3dcaba40a01b10ecf9"}
@@ -19,11 +19,11 @@ warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "fdb96da58174b4
 
 # wasm
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-wasm = "0.2.0"
+tracing-wasm = "0.2.1"
 console_error_panic_hook = "0.1.7"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-serde-wasm-bindgen = "0.4"
+serde-wasm-bindgen = "0.6"
 wasm-streams = "0.4"
 send_wrapper = "0.6.0"
 web-sys = "0.3"
