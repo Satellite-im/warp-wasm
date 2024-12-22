@@ -51,8 +51,6 @@
 
       let get_stream = await ipfs.constellation.get_stream("circle.png")
 
-
-
       append_p("stream result:")
       let res = new Response(get_stream);
       let blob = await res.blob();
