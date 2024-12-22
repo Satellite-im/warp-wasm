@@ -49,18 +49,21 @@
         }
       }
 
-      let get_stream_async_iterator = await ipfs.constellation.get_stream("circle.png")
-      let get_stream = { [Symbol.asyncIterator]() { return get_stream_async_iterator } }
-      let circle_data = []; 
-      for await (const value of get_stream) {
-        console.log(value)
-        if (value.Ok != null) {
-          circle_data = value.Ok
-          break
-        }
-      }
+      let get_stream = await ipfs.constellation.get_stream("circle.png")
+
+
+
       append_p("stream result:")
-      append_img(data_type, circle_data)
+      let res = new Response(get_stream);
+      let blob = await res.blob();
+      let uri = URL.createObjectURL(blob);
+
+      console.log(uri);
+      // display
+      append_img_uri(uri);
+      
+      // dowbloadable link
+      append_a(uri);
 
     });
 
@@ -75,6 +78,20 @@
       let p = document.createElement("p")
       p.appendChild(document.createTextNode(text))
       document.body.appendChild(p)      
+    }
+
+    function append_a(text) {
+      let p = document.createElement("a")
+      p.href = text;
+      p.appendChild(document.createTextNode("click me"));
+      p.download = "test.png";
+      document.body.appendChild(p)
+    }
+
+    function append_img_uri(uri) {
+      let img = document.createElement("img")
+      img.src =  uri
+      document.body.appendChild(img)
     }
 
     function append_img(data_type, data) {
