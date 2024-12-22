@@ -90,7 +90,6 @@ pub fn stream_to_readablestream(stream: BoxStream<'static, JsValue>) -> web_sys:
     // We encase the stream in mutex as a temporary workaround, but since the scope would have sole access that is not shared, we do not need to worry about deadlocks or borrowed access
     let stream = Arc::new(Mutex::new(stream));
     let closure = Closure::wrap(Box::new({
-        let stream = stream.clone();
         move |controller: ReadableStreamDefaultController| {
             let stream = stream.clone();
             wasm_bindgen_futures::spawn_local(async move {
