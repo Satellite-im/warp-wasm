@@ -1244,7 +1244,7 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
     }
-    pub async fn send_community_channel_messsage_event(
+    pub async fn send_community_channel_message_event(
         &mut self,
         community_id: String,
         channel_id: String,
@@ -1259,7 +1259,7 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
     }
-    pub async fn cancel_community_channel_messsage_event(
+    pub async fn cancel_community_channel_message_event(
         &mut self,
         community_id: String,
         channel_id: String,
