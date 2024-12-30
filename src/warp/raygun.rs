@@ -15,7 +15,7 @@ use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp::{
     crypto::DID,
-    raygun::{self, Location, LocationKind, RayGun},
+    raygun::{self, Location, RayGun},
 };
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
 use wasm_bindgen::convert::TryFromJsValue;
@@ -2077,27 +2077,47 @@ impl AttachmentResult {
     }
 
     /// Returns the next progress
-    /// The result is of type warp::raygun::AttachmentKind
-    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L306
+    /// The result is of type {@link AttachmentKind}
     pub async fn next(&mut self) -> std::result::Result<Promise, JsError> {
         self.stream.next().await
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(Tsify, Serialize)]
+#[serde(tag = "kind", content = "values")]
+pub enum LocationKind {
+    /// Indicator that source is [`Constellation`]
+    Constellation { path: String },
+
+    /// Stream of bytes
+    Stream { name: String },
+}
+
+impl From<raygun::LocationKind> for LocationKind {
+    fn from(value: raygun::LocationKind) -> Self {
+        match value {
+            raygun::LocationKind::Constellation { path } => LocationKind::Constellation { path },
+            raygun::LocationKind::Stream { name } => LocationKind::Stream { name },
+            raygun::LocationKind::Disk { .. } => todo!("Disk Location not supported on wasm"),
+        }
+    }
+}
+
+#[derive(Tsify, Serialize)]
+#[serde(tag = "kind", content = "values")]
 pub enum AttachmentKind {
     AttachedProgress(LocationKind, Progression),
-    Pending(Result<(), String>),
+    Pending(Option<String>),
 }
 
 impl From<raygun::AttachmentKind> for AttachmentKind {
     fn from(value: raygun::AttachmentKind) -> Self {
         match value {
             raygun::AttachmentKind::AttachedProgress(loc, prog) => {
-                AttachmentKind::AttachedProgress(loc, prog.into())
+                AttachmentKind::AttachedProgress(loc.into(), prog.into())
             }
             raygun::AttachmentKind::Pending(res) => {
-                AttachmentKind::Pending(res.map_err(|e| e.to_string()))
+                AttachmentKind::Pending(res.map_err(|e| e.to_string()).err())
             }
         }
     }
