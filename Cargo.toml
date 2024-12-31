@@ -18,15 +18,15 @@ warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "fdb96da58
 warp = { git = "https://github.com/Satellite-im/Warp.git", rev = "fdb96da58174b41548992b3dcaba40a01b10ecf9"}
 
 # wasm
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-wasm = "0.2.0"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-wasm = "0.2.1"
 console_error_panic_hook = "0.1.7"
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-serde-wasm-bindgen = "0.4"
-wasm-streams = "0.4"
+wasm-bindgen = "0.2.99"
+wasm-bindgen-futures = "0.4.49"
+serde-wasm-bindgen = "0.6.5"
+wasm-streams = "0.4.2"
 send_wrapper = "0.6.0"
-web-sys = "0.3"
+web-sys = "0.3.76"
 js-sys = "0.3"
 tsify-next = "0.5.4"
 
