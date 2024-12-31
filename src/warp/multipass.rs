@@ -370,7 +370,7 @@ pub enum Identifier {
 
 fn to_did_vec(dids: Vec<String>) -> Vec<DID> {
     dids.into_iter()
-        .map(|did| DID::from_str(&did).unwrap())
+        .filter_map(|did| DID::from_str(&did).ok())
         .collect()
 }
 
