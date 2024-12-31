@@ -1,4 +1,4 @@
-use crate::warp::stream::{AsyncIterator, InnerStream};
+use crate::warp::stream::{stream_to_readablestream, AsyncIterator, InnerStream};
 use futures::StreamExt;
 use macro_utils::FromTo;
 use serde::{Deserialize, Serialize};
@@ -112,16 +112,16 @@ impl ConstellationBox {
 
     /// Returns a file stream
     /// Each stream element is a byte array chunk of the file
-    pub async fn get_stream(&self, name: &str) -> Result<AsyncIterator, JsError> {
+    pub async fn get_stream(&self, name: &str) -> Result<web_sys::ReadableStream, JsError> {
         self.inner
             .get_stream(name)
             .await
             .map_err(|e| e.into())
             .map(|s| {
-                AsyncIterator::new(Box::pin(s.map(|t| {
-                    serde_wasm_bindgen::to_value(&t.map_err(|e| String::from(e.to_string())))
-                        .unwrap()
-                })))
+                let st = s.map(|val| {
+                    val.map_err(|e| e.to_string()).and_then(|v| serde_wasm_bindgen::to_value(&v).map_err(|e| e.to_string())).unwrap()
+                }).boxed();
+                stream_to_readablestream(st)
             })
     }
 

@@ -1,4 +1,4 @@
-use crate::warp::stream::{AsyncIterator, InnerStream};
+use crate::warp::stream::{stream_to_readablestream, AsyncIterator, InnerStream};
 use futures::StreamExt;
 use indexmap::IndexSet;
 use js_sys::{Array, Promise};
@@ -495,7 +495,7 @@ impl RayGunBox {
         conversation_id: String,
         message_id: String,
         file: String,
-    ) -> Result<AsyncIterator, JsError> {
+    ) -> Result<web_sys::ReadableStream, JsError> {
         self.inner
             .download_stream(
                 Uuid::from_str(&conversation_id).unwrap(),
@@ -505,13 +505,10 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                AsyncIterator::new(Box::pin(ok.map(|s| match s {
-                    Ok(v) => serde_wasm_bindgen::to_value(&v).unwrap(),
-                    Err(e) => {
-                        let err: JsError = e.into();
-                        err.into()
-                    }
-                })))
+                let st = ok.map(|val| {
+                    val.map_err(|e| e.to_string()).and_then(|v| serde_wasm_bindgen::to_value(&v).map_err(|e| e.to_string())).unwrap()
+                }).boxed();
+                stream_to_readablestream(st)
             })
     }
 }
@@ -1243,7 +1240,7 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
     }
-    pub async fn send_community_channel_messsage_event(
+    pub async fn send_community_channel_message_event(
         &mut self,
         community_id: String,
         channel_id: String,
@@ -1258,7 +1255,7 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
     }
-    pub async fn cancel_community_channel_messsage_event(
+    pub async fn cancel_community_channel_message_event(
         &mut self,
         community_id: String,
         channel_id: String,
