@@ -2098,7 +2098,7 @@ impl From<raygun::LocationKind> for LocationKind {
         match value {
             raygun::LocationKind::Constellation { path } => LocationKind::Constellation { path },
             raygun::LocationKind::Stream { name } => LocationKind::Stream { name },
-            raygun::LocationKind::Disk { .. } => todo!("Disk Location not supported on wasm"),
+            raygun::LocationKind::Disk { .. } => unimplemented!("Disk Location not supported on wasm"),
         }
     }
 }
