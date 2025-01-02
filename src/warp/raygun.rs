@@ -1304,7 +1304,7 @@ impl RayGunBox {
         channel_id: String,
         message_id: String,
         file: String,
-    ) -> Result<AsyncIterator, JsError> {
+    ) -> Result<web_sys::ReadableStream, JsError> {
         self.inner
             .download_stream_from_community_channel_message(
                 Uuid::from_str(&community_id).unwrap(),
@@ -1315,13 +1315,10 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                AsyncIterator::new(Box::pin(ok.map(|s| match s {
-                    Ok(v) => serde_wasm_bindgen::to_value(&v).unwrap(),
-                    Err(e) => {
-                        let err: JsError = e.into();
-                        err.into()
-                    }
-                })))
+                let st = ok.map(|val| {
+                    val.map_err(|e| e.to_string()).and_then(|v| serde_wasm_bindgen::to_value(&v).map_err(|e| e.to_string())).unwrap()
+                }).boxed();
+                stream_to_readablestream(st)
             })
     }
 }
