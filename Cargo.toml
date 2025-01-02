@@ -11,7 +11,7 @@ bytes = { version = "1", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
 serde = { version = "1.0", features = ["derive", "rc"] }
-indexmap = { version = "2.2.6", features = ["serde"] }
+indexmap = { version = "2.7.0", features = ["serde"] }
 
 # warp
 warp-ipfs = { git = "https://github.com/Satellite-im/Warp.git", rev = "fdb96da58174b41548992b3dcaba40a01b10ecf9"}
@@ -29,6 +29,7 @@ send_wrapper = "0.6.0"
 web-sys = "0.3.76"
 js-sys = "0.3"
 tsify-next = "0.5.4"
+macro_utils = { path = "./macro-utils" }
 
 # examples
 tiny_file_server = "0.1.5"

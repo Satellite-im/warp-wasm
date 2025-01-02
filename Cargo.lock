@@ -3449,6 +3449,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "macro_utils"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.91",
+]
+
+[[package]]
 name = "match_cfg"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6065,6 +6074,7 @@ dependencies = [
  "futures",
  "indexmap 2.7.0",
  "js-sys",
+ "macro_utils",
  "send_wrapper 0.6.0",
  "serde",
  "serde-wasm-bindgen 0.6.5",

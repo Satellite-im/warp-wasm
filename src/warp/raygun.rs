@@ -2,6 +2,7 @@ use crate::warp::stream::{stream_to_readablestream, AsyncIterator, InnerStream};
 use futures::StreamExt;
 use indexmap::IndexSet;
 use js_sys::{Array, Promise};
+use macro_utils::FromTo;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use tsify_next::Tsify;
@@ -14,7 +15,7 @@ use warp::warp::dummy::Dummy;
 use warp::warp::Warp;
 use warp::{
     crypto::DID,
-    raygun::{self, Location, LocationKind, RayGun},
+    raygun::{self, Location, RayGun},
 };
 use warp_ipfs::{WarpIpfs, WarpIpfsInstance};
 use wasm_bindgen::convert::TryFromJsValue;
@@ -516,8 +517,7 @@ impl RayGunBox {
 #[wasm_bindgen]
 impl RayGunBox {
     /// Subscribe to an stream of events from the conversation
-    /// Async results are of type MessageEventKind
-    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L47
+    /// Async results are of type {@link MessageEventKind}
     pub async fn get_conversation_stream(
         &mut self,
         conversation_id: String,
@@ -527,24 +527,23 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                AsyncIterator::new(Box::pin(
-                    ok.map(|s| serde_wasm_bindgen::to_value(&s).unwrap()),
-                ))
+                AsyncIterator::new(Box::pin(ok.map(|s| {
+                    serde_wasm_bindgen::to_value(&Into::<MessageEventKind>::into(s)).unwrap()
+                })))
             })
     }
 
     /// Subscribe to an stream of events
-    /// Async results are of type RayGunEventKind
-    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L33
+    /// Async results are of type {@link RayGunEventKind}
     pub async fn raygun_subscribe(&mut self) -> Result<AsyncIterator, JsError> {
         self.inner
             .raygun_subscribe()
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                AsyncIterator::new(Box::pin(
-                    ok.map(|s| serde_wasm_bindgen::to_value(&s).unwrap()),
-                ))
+                AsyncIterator::new(Box::pin(ok.map(|s| {
+                    serde_wasm_bindgen::to_value(&Into::<RayGunEventKind>::into(s)).unwrap()
+                })))
             })
     }
 }
@@ -552,8 +551,8 @@ impl RayGunBox {
 /// impl RayGunCommunity trait
 #[wasm_bindgen]
 impl RayGunBox {
-    /// Async results are of type MessageEventKind
-    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L47
+    /// Subscribe to an stream of community events for the given community
+    /// Async results are of type {@link MessageEventKind}
     pub async fn get_community_stream(
         &mut self,
         community_id: String,
@@ -563,9 +562,9 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                AsyncIterator::new(Box::pin(
-                    ok.map(|s| serde_wasm_bindgen::to_value(&s).unwrap()),
-                ))
+                AsyncIterator::new(Box::pin(ok.map(|s| {
+                    serde_wasm_bindgen::to_value(&Into::<MessageEventKind>::into(s)).unwrap()
+                })))
             })
     }
 
@@ -1297,6 +1296,7 @@ impl RayGunBox {
             })
     }
     /// Stream a file that been attached to a message
+    /// Results are byte chunks for the file
     /// Note: Must use the filename associated when downloading
     pub async fn download_stream_from_community_channel_message(
         &self,
@@ -1498,6 +1498,309 @@ impl Messages {
         }
     }
 }
+
+#[derive(Tsify, Serialize, Deserialize, FromTo)]
+#[from_to(warp::raygun::RayGunEventKind, only = "from")]
+#[serde(tag = "kind", content = "values", rename_all = "snake_case")]
+pub enum RayGunEventKind {
+    ConversationCreated {
+        conversation_id: String,
+    },
+    ConversationArchived {
+        conversation_id: String,
+    },
+    ConversationUnarchived {
+        conversation_id: String,
+    },
+    ConversationDeleted {
+        conversation_id: String,
+    },
+    CommunityCreated {
+        community_id: String,
+    },
+    CommunityInvited {
+        community_id: String,
+        invite_id: String,
+    },
+    CommunityDeleted {
+        community_id: String,
+    },
+}
+
+#[derive(Tsify, Serialize, Deserialize, FromTo)]
+#[from_to(warp::raygun::MessageEventKind, only = "from")]
+#[serde(tag = "kind", content = "values", rename_all = "snake_case")]
+pub enum MessageEventKind {
+    MessageSent {
+        conversation_id: String,
+        message_id: String,
+    },
+    MessageReceived {
+        conversation_id: String,
+        message_id: String,
+    },
+    MessageEdited {
+        conversation_id: String,
+        message_id: String,
+    },
+    MessageDeleted {
+        conversation_id: String,
+        message_id: String,
+    },
+    MessagePinned {
+        conversation_id: String,
+        message_id: String,
+    },
+    MessageUnpinned {
+        conversation_id: String,
+        message_id: String,
+    },
+    MessageReactionAdded {
+        conversation_id: String,
+        message_id: String,
+        did_key: String,
+        reaction: String,
+    },
+    MessageReactionRemoved {
+        conversation_id: String,
+        message_id: String,
+        did_key: String,
+        reaction: String,
+    },
+    ConversationNameUpdated {
+        conversation_id: String,
+        name: String,
+    },
+    ConversationUpdatedIcon {
+        conversation_id: String,
+    },
+    ConversationUpdatedBanner {
+        conversation_id: String,
+    },
+    ConversationDescriptionChanged {
+        conversation_id: String,
+        description: Option<String>,
+    },
+    RecipientAdded {
+        conversation_id: String,
+        recipient: String,
+    },
+    RecipientRemoved {
+        conversation_id: String,
+        recipient: String,
+    },
+    EventReceived {
+        conversation_id: String,
+        did_key: String,
+        event: MessageEvent,
+    },
+    EventCancelled {
+        conversation_id: String,
+        did_key: String,
+        event: MessageEvent,
+    },
+    ConversationPermissionsUpdated {
+        conversation_id: String,
+        #[from_to(into = "map_permission")]
+        added: Vec<GroupPermissionEntry>,
+        #[from_to(into = "map_permission")]
+        removed: Vec<GroupPermissionEntry>,
+    },
+    CommunityEventReceived {
+        community_id: String,
+        community_channel_id: String,
+        did_key: String,
+        event: MessageEvent,
+    },
+    CommunityEventCancelled {
+        community_id: String,
+        community_channel_id: String,
+        did_key: String,
+        event: MessageEvent,
+    },
+    LeftCommunity {
+        community_id: String,
+    },
+    CreatedCommunityInvite {
+        community_id: String,
+        invite: CommunityInvite,
+    },
+    DeletedCommunityInvite {
+        community_id: String,
+        invite_id: String,
+    },
+    AcceptedCommunityInvite {
+        community_id: String,
+        invite_id: String,
+        user: String,
+    },
+    EditedCommunityInvite {
+        community_id: String,
+        invite_id: String,
+    },
+    CreatedCommunityRole {
+        community_id: String,
+        role: CommunityRole,
+    },
+    DeletedCommunityRole {
+        community_id: String,
+        role_id: String,
+    },
+    EditedCommunityRole {
+        community_id: String,
+        role_id: String,
+    },
+    GrantedCommunityRole {
+        community_id: String,
+        role_id: String,
+        user: String,
+    },
+    RevokedCommunityRole {
+        community_id: String,
+        role_id: String,
+        user: String,
+    },
+    CreatedCommunityChannel {
+        community_id: String,
+        channel: CommunityChannel,
+    },
+    DeletedCommunityChannel {
+        community_id: String,
+        channel_id: String,
+    },
+    EditedCommunityName {
+        community_id: String,
+        name: String,
+    },
+    EditedCommunityDescription {
+        community_id: String,
+        description: Option<String>,
+    },
+    EditedCommunityIcon {
+        community_id: String,
+    },
+    EditedCommunityBanner {
+        community_id: String,
+    },
+    GrantedCommunityPermission {
+        community_id: String,
+        permission: CommunityPermission,
+        role_id: String,
+    },
+    RevokedCommunityPermission {
+        community_id: String,
+        permission: CommunityPermission,
+        role_id: String,
+    },
+    GrantedCommunityPermissionForAll {
+        community_id: String,
+        permission: CommunityPermission,
+    },
+    RevokedCommunityPermissionForAll {
+        community_id: String,
+        permission: CommunityPermission,
+    },
+    RemovedCommunityMember {
+        community_id: String,
+        member: String,
+    },
+    EditedCommunityChannelName {
+        community_id: String,
+        channel_id: String,
+        name: String,
+    },
+    EditedCommunityChannelDescription {
+        community_id: String,
+        channel_id: String,
+        description: Option<String>,
+    },
+    GrantedCommunityChannelPermission {
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+        role_id: String,
+    },
+    RevokedCommunityChannelPermission {
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+        role_id: String,
+    },
+    GrantedCommunityChannelPermissionForAll {
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+    },
+    RevokedCommunityChannelPermissionForAll {
+        community_id: String,
+        channel_id: String,
+        permission: CommunityChannelPermission,
+    },
+    CommunityMessageSent {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    },
+    CommunityMessageReceived {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    },
+    CommunityMessageEdited {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    },
+    CommunityMessageDeleted {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    },
+    CommunityMessagePinned {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    },
+    CommunityMessageUnpinned {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+    },
+    CommunityMessageReactionAdded {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+        did_key: String,
+        reaction: String,
+    },
+    CommunityMessageReactionRemoved {
+        community_id: String,
+        channel_id: String,
+        message_id: String,
+        did_key: String,
+        reaction: String,
+    },
+}
+
+fn map_permission(entries: Vec<(DID, warp::raygun::GroupPermission)>) -> Vec<GroupPermissionEntry> {
+    entries
+        .into_iter()
+        .map(|(user, permission)| GroupPermissionEntry {
+            user: user.to_string(),
+            permission: permission.into(),
+        })
+        .collect()
+}
+
+#[derive(Serialize, Deserialize)]
+#[wasm_bindgen]
+pub struct GroupPermissionEntry {
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub user: String,
+    #[wasm_bindgen(readonly, getter_with_clone)]
+    pub permission: GroupPermission,
+}
+
 #[derive(Serialize, Deserialize)]
 #[wasm_bindgen]
 pub struct Page {
@@ -1771,125 +2074,100 @@ impl AttachmentResult {
     }
 
     /// Returns the next progress
-    /// The result is of type warp::raygun::AttachmentKind
-    /// See https://github.com/Satellite-im/Warp/blob/main/warp/src/raygun/mod.rs#L306
+    /// The result is of type {@link AttachmentKind}
     pub async fn next(&mut self) -> std::result::Result<Promise, JsError> {
         self.stream.next().await
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(Tsify, Serialize)]
+#[serde(tag = "kind", content = "values")]
+pub enum LocationKind {
+    /// Indicator that source is [`Constellation`]
+    Constellation { path: String },
+
+    /// Stream of bytes
+    Stream { name: String },
+}
+
+impl From<raygun::LocationKind> for LocationKind {
+    fn from(value: raygun::LocationKind) -> Self {
+        match value {
+            raygun::LocationKind::Constellation { path } => LocationKind::Constellation { path },
+            raygun::LocationKind::Stream { name } => LocationKind::Stream { name },
+            raygun::LocationKind::Disk { .. } => unimplemented!("Disk Location not supported on wasm"),
+        }
+    }
+}
+
+#[derive(Tsify, Serialize)]
+#[serde(tag = "kind", content = "values")]
 pub enum AttachmentKind {
     AttachedProgress(LocationKind, Progression),
-    Pending(Result<(), String>),
+    Pending(Option<String>),
 }
 
 impl From<raygun::AttachmentKind> for AttachmentKind {
     fn from(value: raygun::AttachmentKind) -> Self {
         match value {
             raygun::AttachmentKind::AttachedProgress(loc, prog) => {
-                AttachmentKind::AttachedProgress(loc, prog.into())
+                AttachmentKind::AttachedProgress(loc.into(), prog.into())
             }
             raygun::AttachmentKind::Pending(res) => {
-                AttachmentKind::Pending(res.map_err(|e| e.to_string()))
+                AttachmentKind::Pending(res.map_err(|e| e.to_string()).err())
             }
         }
     }
 }
 
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(warp::raygun::EmbedState)]
 pub enum EmbedState {
     Enabled,
     Disable,
 }
 
-impl From<EmbedState> for warp::raygun::EmbedState {
-    fn from(value: EmbedState) -> Self {
-        match value {
-            EmbedState::Enabled => raygun::EmbedState::Enabled,
-            EmbedState::Disable => raygun::EmbedState::Disable,
-        }
-    }
-}
-
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(warp::raygun::PinState)]
 pub enum PinState {
     Pin,
     Unpin,
 }
 
-impl From<PinState> for warp::raygun::PinState {
-    fn from(value: PinState) -> Self {
-        match value {
-            PinState::Pin => raygun::PinState::Pin,
-            PinState::Unpin => raygun::PinState::Unpin,
-        }
-    }
-}
-
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(warp::raygun::ReactionState)]
 pub enum ReactionState {
     Add,
     Remove,
 }
 
-impl From<ReactionState> for warp::raygun::ReactionState {
-    fn from(value: ReactionState) -> Self {
-        match value {
-            ReactionState::Add => raygun::ReactionState::Add,
-            ReactionState::Remove => raygun::ReactionState::Remove,
-        }
-    }
-}
-
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(warp::raygun::MessageStatus)]
 pub enum MessageStatus {
     NotSent,
     Sent,
     Delivered,
 }
 
-impl From<warp::raygun::MessageStatus> for MessageStatus {
-    fn from(value: warp::raygun::MessageStatus) -> Self {
-        match value {
-            warp::raygun::MessageStatus::NotSent => MessageStatus::NotSent,
-            warp::raygun::MessageStatus::Sent => MessageStatus::Sent,
-            warp::raygun::MessageStatus::Delivered => MessageStatus::Delivered,
-        }
-    }
-}
-
 #[wasm_bindgen]
+#[derive(FromTo)]
+#[from_to(warp::raygun::MessageType)]
 pub enum MessageType {
     Message,
     Attachment,
     Event,
 }
 
-impl From<warp::raygun::MessageType> for MessageType {
-    fn from(value: warp::raygun::MessageType) -> Self {
-        match value {
-            warp::raygun::MessageType::Message => MessageType::Message,
-            warp::raygun::MessageType::Attachment => MessageType::Attachment,
-            warp::raygun::MessageType::Event => MessageType::Event,
-        }
-    }
-}
-
 #[wasm_bindgen]
-#[derive(Copy, Clone)]
+#[derive(FromTo)]
+#[from_to(warp::raygun::ConversationType)]
 pub enum ConversationType {
     Direct,
     Group,
-}
-
-impl From<warp::raygun::ConversationType> for ConversationType {
-    fn from(value: warp::raygun::ConversationType) -> Self {
-        match value {
-            raygun::ConversationType::Direct => ConversationType::Direct,
-            raygun::ConversationType::Group => ConversationType::Group,
-        }
-    }
 }
 
 #[wasm_bindgen]
@@ -1899,39 +2177,14 @@ extern "C" {
     pub type GroupPermissionList;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromTo)]
+#[from_to(warp::raygun::GroupPermission)]
 #[wasm_bindgen]
 pub enum GroupPermission {
     AddParticipants,
     RemoveParticipants,
     EditGroupInfo,
     EditGroupImages,
-}
-
-impl From<GroupPermission> for warp::raygun::GroupPermission {
-    fn from(value: GroupPermission) -> Self {
-        match value {
-            GroupPermission::AddParticipants => warp::raygun::GroupPermission::AddParticipants,
-            GroupPermission::RemoveParticipants => {
-                warp::raygun::GroupPermission::RemoveParticipants
-            }
-            GroupPermission::EditGroupInfo => warp::raygun::GroupPermission::EditGroupInfo,
-            GroupPermission::EditGroupImages => warp::raygun::GroupPermission::EditGroupImages,
-        }
-    }
-}
-
-impl From<warp::raygun::GroupPermission> for GroupPermission {
-    fn from(value: warp::raygun::GroupPermission) -> Self {
-        match value {
-            warp::raygun::GroupPermission::AddParticipants => GroupPermission::AddParticipants,
-            warp::raygun::GroupPermission::RemoveParticipants => {
-                GroupPermission::RemoveParticipants
-            }
-            warp::raygun::GroupPermission::EditGroupInfo => GroupPermission::EditGroupInfo,
-            warp::raygun::GroupPermission::EditGroupImages => GroupPermission::EditGroupImages,
-        }
-    }
 }
 
 #[wasm_bindgen]
@@ -1992,24 +2245,19 @@ impl ConversationImage {
     }
 
     pub fn image_type(&self) -> FileType {
-        self.0.image_type().into()
+        self.0.image_type().clone().into()
     }
 }
 
+#[derive(FromTo, Serialize, Deserialize)]
+#[from_to(warp::raygun::MessageEvent)]
 #[wasm_bindgen]
 pub enum MessageEvent {
     Typing,
 }
 
-impl From<MessageEvent> for warp::raygun::MessageEvent {
-    fn from(value: MessageEvent) -> Self {
-        match value {
-            MessageEvent::Typing => raygun::MessageEvent::Typing,
-        }
-    }
-}
-
-#[derive(Tsify, Deserialize, Serialize)]
+#[derive(Tsify, Deserialize, Serialize, FromTo)]
+#[from_to(raygun::MessagesType)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum MessagesType {
     /// Stream type
@@ -2023,22 +2271,6 @@ pub enum MessagesType {
         /// Amount of messages per page
         amount_per_page: Option<usize>,
     },
-}
-
-impl From<MessagesType> for raygun::MessagesType {
-    fn from(value: MessagesType) -> Self {
-        match value {
-            MessagesType::Stream => raygun::MessagesType::Stream,
-            MessagesType::List => raygun::MessagesType::List,
-            MessagesType::Pages {
-                page,
-                amount_per_page,
-            } => raygun::MessagesType::Pages {
-                page,
-                amount_per_page,
-            },
-        }
-    }
 }
 
 #[wasm_bindgen]
@@ -2105,7 +2337,7 @@ pub struct CommunityInvitation {
     pub invite: CommunityInvite,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 #[wasm_bindgen]
 pub struct CommunityInvite {
     #[wasm_bindgen(getter_with_clone)]
@@ -2113,9 +2345,39 @@ pub struct CommunityInvite {
     #[wasm_bindgen(getter_with_clone)]
     pub target_user: Option<String>,
     #[wasm_bindgen(getter_with_clone)]
+    #[serde(with = "serde_wasm_bindgen::preserve")]
     pub created: js_sys::Date,
     #[wasm_bindgen(getter_with_clone)]
+    #[serde(
+        deserialize_with = "deserialize_optional",
+        serialize_with = "serialize_optional"
+    )]
     pub expiry: Option<js_sys::Date>,
+}
+
+fn deserialize_optional<'de, D: serde::Deserializer<'de>, T: wasm_bindgen::JsCast>(
+    de: D,
+) -> Result<Option<T>, D::Error> {
+    let value: JsValue = serde_wasm_bindgen::preserve::deserialize(de)?;
+    Ok(if value.is_undefined() {
+        None
+    } else {
+        Some(
+            value
+                .dyn_into()
+                .map_err(|_| serde::de::Error::custom("Could not convert optional value"))?,
+        )
+    })
+}
+
+fn serialize_optional<S: serde::Serializer, T: JsCast>(
+    val: &Option<T>,
+    ser: S,
+) -> Result<S::Ok, S::Error> {
+    match val {
+        Some(opt) => serde_wasm_bindgen::preserve::serialize(opt, ser),
+        None => ser.serialize_none(),
+    }
 }
 
 impl From<raygun::community::CommunityInvite> for CommunityInvite {
@@ -2169,6 +2431,7 @@ extern "C" {
 }
 
 #[wasm_bindgen]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct CommunityChannel {
     #[wasm_bindgen(readonly, getter_with_clone)]
     pub id: String,
@@ -2177,8 +2440,10 @@ pub struct CommunityChannel {
     #[wasm_bindgen(readonly, getter_with_clone)]
     pub description: Option<String>,
     #[wasm_bindgen(readonly, getter_with_clone)]
+    #[serde(with = "serde_wasm_bindgen::preserve")]
     pub created: js_sys::Date,
     #[wasm_bindgen(readonly, getter_with_clone)]
+    #[serde(with = "serde_wasm_bindgen::preserve")]
     pub modified: js_sys::Date,
     #[wasm_bindgen(readonly, getter_with_clone)]
     pub channel_type: CommunityChannelType,
@@ -2187,7 +2452,7 @@ pub struct CommunityChannel {
 
 impl From<raygun::community::CommunityChannel> for CommunityChannel {
     fn from(value: raygun::community::CommunityChannel) -> Self {
-        CommunityChannel {
+        Self {
             id: value.id().into(),
             name: value.name().into(),
             description: value.description().map(|d| d.into()),
@@ -2206,35 +2471,16 @@ impl CommunityChannel {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize, FromTo)]
+#[from_to(raygun::community::CommunityChannelType)]
 #[wasm_bindgen]
 pub enum CommunityChannelType {
     Standard,
     VoiceEnabled,
 }
 
-impl From<raygun::community::CommunityChannelType> for CommunityChannelType {
-    fn from(value: raygun::community::CommunityChannelType) -> Self {
-        match value {
-            raygun::community::CommunityChannelType::Standard => CommunityChannelType::Standard,
-            raygun::community::CommunityChannelType::VoiceEnabled => {
-                CommunityChannelType::VoiceEnabled
-            }
-        }
-    }
-}
-
-impl From<CommunityChannelType> for raygun::community::CommunityChannelType {
-    fn from(value: CommunityChannelType) -> Self {
-        match value {
-            CommunityChannelType::Standard => raygun::community::CommunityChannelType::Standard,
-            CommunityChannelType::VoiceEnabled => {
-                raygun::community::CommunityChannelType::VoiceEnabled
-            }
-        }
-    }
-}
-
+#[derive(FromTo, Serialize, Deserialize)]
+#[from_to(raygun::community::CommunityPermission)]
 #[wasm_bindgen]
 pub enum CommunityPermission {
     EditName,
@@ -2266,72 +2512,11 @@ pub enum CommunityPermission {
     PinMessages,
 }
 
-impl From<CommunityPermission> for raygun::community::CommunityPermission {
-    fn from(value: CommunityPermission) -> Self {
-        match value {
-            CommunityPermission::EditName => raygun::community::CommunityPermission::EditName,
-            CommunityPermission::EditDescription => {
-                raygun::community::CommunityPermission::EditDescription
-            }
-            CommunityPermission::EditIcon => raygun::community::CommunityPermission::EditIcon,
-            CommunityPermission::EditBanner => raygun::community::CommunityPermission::EditBanner,
-            CommunityPermission::CreateRoles => raygun::community::CommunityPermission::CreateRoles,
-            CommunityPermission::EditRoles => raygun::community::CommunityPermission::EditRoles,
-            CommunityPermission::DeleteRoles => raygun::community::CommunityPermission::DeleteRoles,
-            CommunityPermission::GrantRoles => raygun::community::CommunityPermission::GrantRoles,
-            CommunityPermission::RevokeRoles => raygun::community::CommunityPermission::RevokeRoles,
-            CommunityPermission::GrantPermissions => {
-                raygun::community::CommunityPermission::GrantPermissions
-            }
-            CommunityPermission::RevokePermissions => {
-                raygun::community::CommunityPermission::RevokePermissions
-            }
-            CommunityPermission::CreateInvites => {
-                raygun::community::CommunityPermission::CreateInvites
-            }
-            CommunityPermission::EditInvites => raygun::community::CommunityPermission::EditInvites,
-            CommunityPermission::DeleteInvites => {
-                raygun::community::CommunityPermission::DeleteInvites
-            }
-            CommunityPermission::CreateChannels => {
-                raygun::community::CommunityPermission::CreateChannels
-            }
-            CommunityPermission::EditChannels => {
-                raygun::community::CommunityPermission::EditChannels
-            }
-            CommunityPermission::DeleteChannels => {
-                raygun::community::CommunityPermission::DeleteChannels
-            }
-            CommunityPermission::RemoveMembers => {
-                raygun::community::CommunityPermission::RemoveMembers
-            }
-            CommunityPermission::DeleteMessages => {
-                raygun::community::CommunityPermission::DeleteMessages
-            }
-            CommunityPermission::PinMessages => raygun::community::CommunityPermission::PinMessages,
-        }
-    }
-}
-
+#[derive(FromTo, Serialize, Deserialize)]
+#[from_to(raygun::community::CommunityChannelPermission)]
 #[wasm_bindgen]
 pub enum CommunityChannelPermission {
     ViewChannel,
     SendMessages,
     SendAttachments,
-}
-
-impl From<CommunityChannelPermission> for raygun::community::CommunityChannelPermission {
-    fn from(value: CommunityChannelPermission) -> Self {
-        match value {
-            CommunityChannelPermission::ViewChannel => {
-                raygun::community::CommunityChannelPermission::ViewChannel
-            }
-            CommunityChannelPermission::SendMessages => {
-                raygun::community::CommunityChannelPermission::SendMessages
-            }
-            CommunityChannelPermission::SendAttachments => {
-                raygun::community::CommunityChannelPermission::SendAttachments
-            }
-        }
-    }
 }
