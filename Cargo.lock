@@ -232,6 +232,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-rt"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d018649f3650c4901efcf689d7dc4934302a6723f15c675f344cd359e3ed498"
+dependencies = [
+ "futures",
+ "parking_lot",
+ "tokio",
+ "wasm-bindgen-futures",
+]
+
+[[package]]
 name = "async-stream"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1445,7 +1457,7 @@ dependencies = [
 [[package]]
 name = "fs"
 version = "0.1.0"
-source = "git+https://github.com/Satellite-im/Warp.git?rev=fdb96da58174b41548992b3dcaba40a01b10ecf9#fdb96da58174b41548992b3dcaba40a01b10ecf9"
+source = "git+https://github.com/Satellite-im/Warp.git?rev=acc73ec2fe9563e1908641d1b4007af73e8293db#acc73ec2fe9563e1908641d1b4007af73e8293db"
 dependencies = [
  "gloo",
  "tokio",
@@ -5973,7 +5985,7 @@ dependencies = [
 [[package]]
 name = "warp"
 version = "0.1.0"
-source = "git+https://github.com/Satellite-im/Warp.git?rev=fdb96da58174b41548992b3dcaba40a01b10ecf9#fdb96da58174b41548992b3dcaba40a01b10ecf9"
+source = "git+https://github.com/Satellite-im/Warp.git?rev=acc73ec2fe9563e1908641d1b4007af73e8293db#acc73ec2fe9563e1908641d1b4007af73e8293db"
 dependencies = [
  "aes-gcm",
  "anyhow",
@@ -6024,10 +6036,11 @@ dependencies = [
 [[package]]
 name = "warp-ipfs"
 version = "0.1.0"
-source = "git+https://github.com/Satellite-im/Warp.git?rev=fdb96da58174b41548992b3dcaba40a01b10ecf9#fdb96da58174b41548992b3dcaba40a01b10ecf9"
+source = "git+https://github.com/Satellite-im/Warp.git?rev=acc73ec2fe9563e1908641d1b4007af73e8293db#acc73ec2fe9563e1908641d1b4007af73e8293db"
 dependencies = [
  "anyhow",
  "async-recursion",
+ "async-rt",
  "async-stream",
  "async-trait",
  "base64 0.21.7",

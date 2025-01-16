@@ -505,9 +505,15 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                let st = ok.map(|val| {
-                    val.map_err(|e| e.to_string()).and_then(|v| serde_wasm_bindgen::to_value(&v).map_err(|e| e.to_string())).unwrap()
-                }).boxed();
+                let st = ok
+                    .map(|val| {
+                        val.map_err(|e| e.to_string())
+                            .and_then(|v| {
+                                serde_wasm_bindgen::to_value(&v).map_err(|e| e.to_string())
+                            })
+                            .unwrap()
+                    })
+                    .boxed();
                 stream_to_readablestream(st)
             })
     }
@@ -702,16 +708,9 @@ impl RayGunBox {
             .map_err(|e| e.into())
             .map(|inv| inv.into())
     }
-    pub async fn accept_community_invite(
-        &mut self,
-        community_id: String,
-        invite_id: String,
-    ) -> Result<(), JsError> {
+    pub async fn request_join_community(&mut self, community_id: String) -> Result<(), JsError> {
         self.inner
-            .accept_community_invite(
-                Uuid::from_str(&community_id).unwrap(),
-                Uuid::from_str(&invite_id).unwrap(),
-            )
+            .request_join_community(Uuid::from_str(&community_id).unwrap())
             .await
             .map_err(|e| e.into())
     }
@@ -1315,9 +1314,15 @@ impl RayGunBox {
             .await
             .map_err(|e| e.into())
             .map(|ok| {
-                let st = ok.map(|val| {
-                    val.map_err(|e| e.to_string()).and_then(|v| serde_wasm_bindgen::to_value(&v).map_err(|e| e.to_string())).unwrap()
-                }).boxed();
+                let st = ok
+                    .map(|val| {
+                        val.map_err(|e| e.to_string())
+                            .and_then(|v| {
+                                serde_wasm_bindgen::to_value(&v).map_err(|e| e.to_string())
+                            })
+                            .unwrap()
+                    })
+                    .boxed();
                 stream_to_readablestream(st)
             })
     }
@@ -1519,6 +1524,16 @@ pub enum RayGunEventKind {
         community_id: String,
         invite_id: String,
     },
+    CommunityUninvited {
+        community_id: String,
+        invite_id: String,
+    },
+    CommunityJoined {
+        community_id: String,
+    },
+    CommunityJoinRejected {
+        community_id: String,
+    },
     CommunityDeleted {
         community_id: String,
     },
@@ -1626,9 +1641,8 @@ pub enum MessageEventKind {
         community_id: String,
         invite_id: String,
     },
-    AcceptedCommunityInvite {
+    CommunityJoined {
         community_id: String,
-        invite_id: String,
         user: String,
     },
     EditedCommunityInvite {
@@ -2092,7 +2106,9 @@ impl From<raygun::LocationKind> for LocationKind {
         match value {
             raygun::LocationKind::Constellation { path } => LocationKind::Constellation { path },
             raygun::LocationKind::Stream { name } => LocationKind::Stream { name },
-            raygun::LocationKind::Disk { .. } => unimplemented!("Disk Location not supported on wasm"),
+            raygun::LocationKind::Disk { .. } => {
+                unimplemented!("Disk Location not supported on wasm")
+            }
         }
     }
 }
